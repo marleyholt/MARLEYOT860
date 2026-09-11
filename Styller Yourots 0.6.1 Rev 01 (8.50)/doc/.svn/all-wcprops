@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/private/forgottenserver/!svn/ver/2530/trunk/doc
+END
+GROUPS
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/private/forgottenserver/!svn/ver/2003/trunk/doc/GROUPS
+END
+SCRIPTSYSTEM_HELP
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/private/forgottenserver/!svn/ver/2530/trunk/doc/SCRIPTSYSTEM_HELP
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/private/forgottenserver/!svn/ver/1900/trunk/doc/LICENSE
+END
+CHANGELOG
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/private/forgottenserver/!svn/ver/1900/trunk/doc/CHANGELOG
+END
+SQL_QUERIES
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/private/forgottenserver/!svn/ver/2172/trunk/doc/SQL_QUERIES
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/private/forgottenserver/!svn/ver/1900/trunk/doc/README
+END
+SIGNALS
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/private/forgottenserver/!svn/ver/1900/trunk/doc/SIGNALS
+END
+TODO
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/private/forgottenserver/!svn/ver/2438/trunk/doc/TODO
+END
+TODO_04
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/private/forgottenserver/!svn/ver/2440/trunk/doc/TODO_04
+END
+LUA_FUNCTIONS
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/private/forgottenserver/!svn/ver/2530/trunk/doc/LUA_FUNCTIONS
+END
+COMMANDS_HELP
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/private/forgottenserver/!svn/ver/2451/trunk/doc/COMMANDS_HELP
+END
+LIQUIDS
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/private/forgottenserver/!svn/ver/1900/trunk/doc/LIQUIDS
+END
+ACTION_IDS
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/private/forgottenserver/!svn/ver/2298/trunk/doc/ACTION_IDS
+END
+MYSQL_HELP
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/private/forgottenserver/!svn/ver/2440/trunk/doc/MYSQL_HELP
+END
+CONFIG_HELP
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/private/forgottenserver/!svn/ver/2530/trunk/doc/CONFIG_HELP
+END
+RESERVED_IDS
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/private/forgottenserver/!svn/ver/1900/trunk/doc/RESERVED_IDS
+END

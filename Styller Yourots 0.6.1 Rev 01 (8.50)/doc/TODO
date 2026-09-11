@@ -1,0 +1,27 @@
+[ TODO
+	Project Name
+		The Forgotten Server
+
+	Version
+		0.3.5
+
+	Codenamed
+		Crying Damson
+
+	License
+		GNU GPLv3
+
+	Forum
+		http://otland.net/
+]
+
+[ TASKS
+	Finish documentation as its incomplete
+		Assigned to: KaczooH
+
+	Patch missing changes from OpenTibia SVN
+		Assigned to: slawkens, Elf
+
+	Deprecate several hardcoded systems (guild management, experience stages, etc) and rescript them in Lua
+		Assigned to: Elf, KaczooH, slawkens
+]

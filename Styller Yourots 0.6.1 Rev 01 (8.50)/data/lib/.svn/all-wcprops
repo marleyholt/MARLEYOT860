@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/private/forgottenserver/!svn/ver/2520/trunk/data/lib
+END
+compat.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/private/forgottenserver/!svn/ver/2502/trunk/data/lib/compat.lua
+END
+database.lua
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/private/forgottenserver/!svn/ver/1816/trunk/data/lib/database.lua
+END
+position.lua
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/private/forgottenserver/!svn/ver/2520/trunk/data/lib/position.lua
+END
+wait.lua
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/private/forgottenserver/!svn/ver/2020/trunk/data/lib/wait.lua
+END
+class.lua
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/private/forgottenserver/!svn/ver/1899/trunk/data/lib/class.lua
+END
+function.lua
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/private/forgottenserver/!svn/ver/2487/trunk/data/lib/function.lua
+END
+vocations.lua
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/private/forgottenserver/!svn/ver/2274/trunk/data/lib/vocations.lua
+END
+string.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/private/forgottenserver/!svn/ver/1899/trunk/data/lib/string.lua
+END
+exhaustion.lua
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/private/forgottenserver/!svn/ver/2264/trunk/data/lib/exhaustion.lua
+END
+table.lua
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/private/forgottenserver/!svn/ver/1899/trunk/data/lib/table.lua
+END
+ip.lua
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/private/forgottenserver/!svn/ver/2362/trunk/data/lib/ip.lua
+END
+constant.lua
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/private/forgottenserver/!svn/ver/2500/trunk/data/lib/constant.lua
+END
+data.lua
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/private/forgottenserver/!svn/ver/2006/trunk/data/lib/data.lua
+END

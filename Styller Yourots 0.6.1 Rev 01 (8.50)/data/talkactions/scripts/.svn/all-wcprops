@@ -1,0 +1,293 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/private/forgottenserver/!svn/ver/2497/trunk/data/talkactions/scripts
+END
+teleporttiles.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/private/forgottenserver/!svn/ver/2374/trunk/data/talkactions/scripts/teleporttiles.lua
+END
+leavehouse.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/leavehouse.lua
+END
+commands.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/private/forgottenserver/!svn/ver/2451/trunk/data/talkactions/scripts/commands.lua
+END
+frags.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/private/forgottenserver/!svn/ver/2335/trunk/data/talkactions/scripts/frags.lua
+END
+unban.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/unban.lua
+END
+position.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/position.lua
+END
+teleportsend.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/private/forgottenserver/!svn/ver/1961/trunk/data/talkactions/scripts/teleportsend.lua
+END
+notations.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/notations.lua
+END
+summon.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/summon.lua
+END
+raid.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/raid.lua
+END
+configinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/2436/trunk/data/talkactions/scripts/configinfo.lua
+END
+deathlist.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/private/forgottenserver/!svn/ver/1948/trunk/data/talkactions/scripts/deathlist.lua
+END
+gethouse.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/gethouse.lua
+END
+mode.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/mode.lua
+END
+gamemaster.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/gamemaster.lua
+END
+animatedtext.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/animatedtext.lua
+END
+multicheck.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/2362/trunk/data/talkactions/scripts/multicheck.lua
+END
+reports.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/private/forgottenserver/!svn/ver/2418/trunk/data/talkactions/scripts/reports.lua
+END
+save.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/save.lua
+END
+teleportfloor.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/private/forgottenserver/!svn/ver/2497/trunk/data/talkactions/scripts/teleportfloor.lua
+END
+teleportto.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/2340/trunk/data/talkactions/scripts/teleportto.lua
+END
+broadcast.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/broadcast.lua
+END
+teleporthere.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/private/forgottenserver/!svn/ver/2374/trunk/data/talkactions/scripts/teleporthere.lua
+END
+uptime.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/uptime.lua
+END
+storage.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/storage.lua
+END
+pvp.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/pvp.lua
+END
+masskick.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/masskick.lua
+END
+reload.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/2418/trunk/data/talkactions/scripts/reload.lua
+END
+teleporttown.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/teleporttown.lua
+END
+playerinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/playerinfo.lua
+END
+creature.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/private/forgottenserver/!svn/ver/2340/trunk/data/talkactions/scripts/creature.lua
+END
+teleportmaster.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/teleportmaster.lua
+END
+shutdown.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/shutdown.lua
+END
+kick.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/private/forgottenserver/!svn/ver/2337/trunk/data/talkactions/scripts/kick.lua
+END
+clean.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/private/forgottenserver/!svn/ver/2362/trunk/data/talkactions/scripts/clean.lua
+END
+createitem.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/createitem.lua
+END
+serverinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/private/forgottenserver/!svn/ver/2006/trunk/data/talkactions/scripts/serverinfo.lua
+END
+online.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/2362/trunk/data/talkactions/scripts/online.lua
+END
+promote.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/private/forgottenserver/!svn/ver/2409/trunk/data/talkactions/scripts/promote.lua
+END
+money.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/money.lua
+END
+closeopen.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/closeopen.lua
+END
+broadcastclass.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/broadcastclass.lua
+END
+owner.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/owner.lua
+END
+newtype.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/private/forgottenserver/!svn/ver/2362/trunk/data/talkactions/scripts/newtype.lua
+END
+animationeffect.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/animationeffect.lua
+END
+remove.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/2418/trunk/data/talkactions/scripts/remove.lua
+END
+magiceffect.lua
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/private/forgottenserver/!svn/ver/1898/trunk/data/talkactions/scripts/magiceffect.lua
+END
+waypoints.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/private/forgottenserver/!svn/ver/2452/trunk/data/talkactions/scripts/waypoints.lua
+END

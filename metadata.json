@@ -1,0 +1,8 @@
+{
+  "name": "MarleyOT 8.5 - Styller Yurots",
+  "description": "Painel interativo e gerador de scripts para automação, configuração e implantação do Styller YurOTS 8.60 no Ubuntu 20.04.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

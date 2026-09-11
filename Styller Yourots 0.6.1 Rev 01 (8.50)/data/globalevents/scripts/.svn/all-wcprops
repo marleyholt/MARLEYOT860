@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/private/forgottenserver/!svn/ver/2446/trunk/data/globalevents/scripts
+END
+clean.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/2274/trunk/data/globalevents/scripts/clean.lua
+END
+start.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/private/forgottenserver/!svn/ver/2299/trunk/data/globalevents/scripts/start.lua
+END
+record.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/private/forgottenserver/!svn/ver/2416/trunk/data/globalevents/scripts/record.lua
+END
+save.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/private/forgottenserver/!svn/ver/2446/trunk/data/globalevents/scripts/save.lua
+END

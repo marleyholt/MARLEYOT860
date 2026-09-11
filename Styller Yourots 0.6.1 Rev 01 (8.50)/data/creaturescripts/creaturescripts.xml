@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creaturescripts>
+	<event type="login" name="PlayerLogin" event="script" value="login.lua"/>
+
+	<event type="joinchannel" name="GuildMotd" event="script" value="guildmotd.lua"/>
+	<event type="receivemail" name="Mail" event="script" value="mail.lua"/>
+	<event type="reportbug" name="SaveReportBug" script="reportbug.lua"/>
+
+	<event type="think" name="Idle" event="script" value="idle.lua"/>
+	<event type="think" name="SkullCheck" event="script" value="skullcheck.lua"/>
+	<event type="death" name="PlayerDeath" event="script" value="playerdeath.lua"/>
+	<event type="death" name="Pythius the rottenTeleport" script="Pythius the rotten_teleport.lua"/>
+	<event type="death" name="inquisitionPortals" script="inquisitionPortals.lua"/>
+	<event type="kill" name="ArenaKill" event="script" value="arenakill.lua"/>
+	<event type="login" name="FirstItems" event="script" value="firstitems.lua"/>
+	<event type="kill" name="KillingInTheNameOf" script="kill_counter.lua"/>
+</creaturescripts>
