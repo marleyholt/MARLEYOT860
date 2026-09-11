@@ -97,13 +97,13 @@
 	premiumPlayerSkipWaitList = "no"
 
 	-- Database
-	sqlType = "sqlite"
+	sqlType = "mysql"
 	sqlHost = "localhost"
 	sqlPort = 3306
-	sqlUser = "root"
-	sqlPass = ""
-	sqlDatabase = ""
-	sqlFile = "Styller.s3db"
+	sqlUser = "marleyot"
+	sqlPass = "marley22"
+	sqlDatabase = "styller"
+	sqlFile = ""
 	sqlKeepAlive = 0
 	mysqlReadTimeout = 10
 	mysqlWriteTimeout = 10
