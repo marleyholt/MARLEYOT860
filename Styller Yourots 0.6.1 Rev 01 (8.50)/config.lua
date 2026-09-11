@@ -146,7 +146,7 @@
 	maximumDoorLevel = 500
 
 	-- Map
-	mapName = "Styller"
+	mapName = "Styller.otbm"
 	mapAuthor = "Léo"
 	randomizeTiles = "yes"
 	useHouseDataStorage = "yes"
