@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/private/forgottenserver/!svn/ver/2460/trunk/schemas
+END
+sqlite.sql
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/private/forgottenserver/!svn/ver/2460/trunk/schemas/sqlite.sql
+END
+mysql.sql
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/private/forgottenserver/!svn/ver/2460/trunk/schemas/mysql.sql
+END
+pgsql.sql
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/private/forgottenserver/!svn/ver/2440/trunk/schemas/pgsql.sql
+END

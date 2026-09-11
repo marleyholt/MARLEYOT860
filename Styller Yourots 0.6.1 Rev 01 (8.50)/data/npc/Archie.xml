@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<npc name="Archie" script="data/npc/scripts/frags.lua" walkinterval="2000" floorchange="0">
+	<health now="100" max="100"/>
+	<look type="130" head="39" body="122" legs="125" feet="57" addons="3"/>
+	<parameters>
+		<parameter key="message_greet" value="Hello |PLAYERNAME|. I can pull out your red skull by 5 premmium times."/>
+	</parameters>
+</npc>

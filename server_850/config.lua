@@ -74,7 +74,7 @@
 
 	-- Connection config
 	worldId = 0
-	ip = "127.0.0.1"
+	ip = "137.131.196.66"
 	bindOnlyConfiguredIpAddress = "no"
 	loginPort = 7171
 	gamePort = 7172
