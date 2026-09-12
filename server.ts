@@ -12,8 +12,8 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Settings persistence
 const SETTINGS_FILE = path.join(process.cwd(), 'portal_settings.json');
@@ -22,6 +22,7 @@ interface PortalSettingsData {
   clientDownloadUrl: string;
   serverIconUrl: string;
   serverName: string;
+  heroBannerUrl?: string;
 }
 
 function getSettings(): PortalSettingsData {
@@ -29,6 +30,7 @@ function getSettings(): PortalSettingsData {
     clientDownloadUrl: 'http://marleyot.duckdns.org/downloads/MarleyOT-ClientV8.zip',
     serverIconUrl: '',
     serverName: 'MarleyOT 8.60',
+    heroBannerUrl: '',
   };
 
   try {
@@ -176,11 +178,12 @@ app.get('/api/settings', (req: Request, res: Response) => {
 });
 
 app.post('/api/admin/settings', (req: Request, res: Response) => {
-  const { clientDownloadUrl, serverIconUrl, serverName } = req.body;
+  const { clientDownloadUrl, serverIconUrl, serverName, heroBannerUrl } = req.body;
   const updated = saveSettings({
     clientDownloadUrl: clientDownloadUrl || undefined,
     serverIconUrl: serverIconUrl !== undefined ? serverIconUrl : undefined,
     serverName: serverName || undefined,
+    heroBannerUrl: heroBannerUrl !== undefined ? heroBannerUrl : undefined,
   });
   res.json({ success: true, settings: updated });
 });

@@ -13,6 +13,7 @@ export interface PortalSettings {
   clientDownloadUrl: string;
   serverIconUrl: string;
   serverName: string;
+  heroBannerUrl?: string;
 }
 
 export interface PlayerCharacter {

@@ -258,7 +258,19 @@ export default function App() {
 
         {/* Content Area */}
         <main className="flex-1 min-w-0">
-          {currentPage === 'home' && <HomeView onNavigate={setCurrentPage} />}
+          {currentPage === 'home' && (
+            <HomeView 
+              onNavigate={setCurrentPage} 
+              heroBannerUrl={settings.heroBannerUrl}
+              isGM={isGM}
+              onUpdateHeroBanner={async (newUrl: string) => {
+                return await handleSaveSettings({
+                  ...settings,
+                  heroBannerUrl: newUrl,
+                });
+              }}
+            />
+          )}
           {currentPage === 'create_account' && (
             <CreateAccountView onAccountCreated={handleAccountCreated} />
           )}
