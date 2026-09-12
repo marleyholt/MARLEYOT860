@@ -1,0 +1,8 @@
+{
+  "name": "STYLLER 2023 - TFS 1.5 (8.60)",
+  "description": "Guia definitivo e suite operacional para instalação, compilação e configuração do servidor STYLLER 2023 - TFS 1.5 (8.60) e montagem completa do cliente OTClientV8 com vBot integrado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
