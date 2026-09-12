@@ -1,3 +1,54 @@
+
+-- Polyfills for NpcSystem in TFS 0.4
+if not isItemRune then
+    function isItemRune(itemid)
+        if isRune then return isRune(itemid) end
+        if getItemInfo then
+            local info = getItemInfo(itemid)
+            if info and info.type == ITEM_TYPE_RUNE then return true end
+        end
+        return (itemid >= 2260 and itemid <= 2316)
+    end
+end
+
+if not isItemFluidContainer then
+    function isItemFluidContainer(itemid)
+        if isFluidContainer then return isFluidContainer(itemid) end
+        return false
+    end
+end
+
+if not getItemDescriptionsById then
+    function getItemDescriptionsById(itemid)
+        if getItemInfo then
+            local info = getItemInfo(itemid)
+            if info then
+                return {
+                    name = info.name or '',
+                    plural = info.plural or info.name or '',
+                    article = info.article or '',
+                    description = info.description or '',
+                    special = '',
+                    text = '',
+                    writer = '',
+                    date = ''
+                }
+            end
+        end
+        return {name = '', plural = '', article = '', description = '', special = '', text = '', writer = '', date = ''}
+    end
+end
+
+if not getItemDescriptions then
+    function getItemDescriptions(uid)
+        local item = getThing(uid)
+        if item and item.itemid and item.itemid > 0 then
+            return getItemDescriptionsById(item.itemid)
+        end
+        return {name = '', plural = '', article = '', description = '', special = '', text = '', writer = '', date = ''}
+    end
+end
+
 -- Advanced NPC System (Created by Jiddo),
 -- Modified by Talaturen.
 
