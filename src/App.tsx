@@ -10,9 +10,18 @@ import { ServerInfoView } from './components/ServerInfoView';
 import { DownloadsView } from './components/DownloadsView';
 import { DeployGuideView } from './components/DeployGuideView';
 import { AdminView } from './components/AdminView';
+import { DeathsView } from './components/DeathsView';
+import { HousesView } from './components/HousesView';
+import { GuildsView } from './components/GuildsView';
+import { CharacterProfileView } from './components/CharacterProfileView';
+import { ChangelogView } from './components/ChangelogView';
+import { HelpdeskView } from './components/HelpdeskView';
+import { ShopView } from './components/ShopView';
+import { DatabaseDiagnosticView } from './components/DatabaseDiagnosticView';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
+  const [inspectedCharacter, setInspectedCharacter] = useState<string>('Marley Sorcerer');
 
   // Configurações do Portal (Download do Client, Ícone e Nome)
   const [settings, setSettings] = useState<PortalSettings>({
@@ -149,8 +158,32 @@ export default function App() {
     )
   );
 
-  const handleLogin = (accountName: string, pass: string): boolean => {
-    // 1. Verificar credenciais especiais conhecidas do servidor
+  const handleLogin = async (accountName: string, pass: string): Promise<boolean> => {
+    // 1. Autenticação direta no banco MariaDB (TFS 1.5 SHA1)
+    try {
+      const res = await fetch('/api/accounts/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountName, password: pass })
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.session) {
+        setActiveSession(data.session);
+        localStorage.setItem('marleyot_active_session', JSON.stringify(data.session));
+        if (data.session.characters && data.session.characters.length > 0) {
+          setCharacters(prev => {
+            const accNames = new Set(data.session.characters.map((c: any) => c.name.toLowerCase()));
+            const others = prev.filter(c => !accNames.has(c.name.toLowerCase()));
+            return [...others, ...data.session.characters];
+          });
+        }
+        return true;
+      }
+    } catch (e) {
+      console.warn('Backend login error or offline, attempting local fallbacks:', e);
+    }
+
+    // 2. Verificar credenciais especiais conhecidas do servidor
     if (accountName === '1234567' && (pass === '1234567' || pass === 'marley')) {
       const godSession: AccountSession = {
         accountName: '1234567',
@@ -187,7 +220,7 @@ export default function App() {
       return true;
     }
 
-    // 2. Verificar contas criadas no navegador
+    // 3. Verificar contas criadas no navegador
     const existingAccountsRaw = localStorage.getItem('marleyot_accounts');
     if (existingAccountsRaw) {
       const accounts = JSON.parse(existingAccountsRaw);
@@ -208,6 +241,26 @@ export default function App() {
     return false;
   };
 
+  const handleRefreshAccountCharacters = async () => {
+    if (!activeSession) return;
+    try {
+      const res = await fetch(`/api/accounts/characters?accountName=${encodeURIComponent(activeSession.accountName)}`);
+      if (res.ok) {
+        const chars: PlayerCharacter[] = await res.json();
+        const updatedSession = { ...activeSession, characters: chars };
+        setActiveSession(updatedSession);
+        localStorage.setItem('marleyot_active_session', JSON.stringify(updatedSession));
+        setCharacters(prev => {
+          const accNames = new Set(chars.map(c => c.name.toLowerCase()));
+          const others = prev.filter(c => !accNames.has(c.name.toLowerCase()));
+          return [...others, ...chars];
+        });
+      }
+    } catch (e) {
+      console.error('Erro ao recarregar personagens da conta:', e);
+    }
+  };
+
   const handleLogout = () => {
     setActiveSession(null);
     localStorage.removeItem('marleyot_active_session');
@@ -219,7 +272,11 @@ export default function App() {
       const acc = JSON.parse(saved);
       setActiveSession(acc);
       if (acc.characters && acc.characters.length > 0) {
-        setCharacters(prev => [...prev, ...acc.characters]);
+        setCharacters(prev => {
+          const accNames = new Set(acc.characters.map((c: any) => c.name.toLowerCase()));
+          const others = prev.filter(c => !accNames.has(c.name.toLowerCase()));
+          return [...others, ...acc.characters];
+        });
       }
     }
     setCurrentPage('account_management');
@@ -227,11 +284,12 @@ export default function App() {
 
   const handleCharacterCreated = (newChar: PlayerCharacter) => {
     if (!activeSession) return;
-    const updatedChars = [...activeSession.characters, newChar];
+    const existing = activeSession.characters.filter(c => c.name.toLowerCase() !== newChar.name.toLowerCase());
+    const updatedChars = [...existing, newChar];
     const updatedSession = { ...activeSession, characters: updatedChars };
     setActiveSession(updatedSession);
     localStorage.setItem('marleyot_active_session', JSON.stringify(updatedSession));
-    setCharacters(prev => [...prev, newChar]);
+    setCharacters(prev => [...prev.filter(c => c.name.toLowerCase() !== newChar.name.toLowerCase()), newChar]);
   };
 
   return (
@@ -281,6 +339,11 @@ export default function App() {
               onLogout={handleLogout}
               onCharacterCreated={handleCharacterCreated}
               onOpenAdmin={() => setCurrentPage('admin_panel')}
+              onSelectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
+              onRefreshCharacters={handleRefreshAccountCharacters}
             />
           )}
           {currentPage === 'admin_panel' && (
@@ -292,7 +355,56 @@ export default function App() {
               onNavigate={setCurrentPage}
             />
           )}
-          {currentPage === 'highscores' && <HighscoresView characters={characters} />}
+          {currentPage === 'highscores' && (
+            <HighscoresView 
+              characters={characters} 
+            />
+          )}
+          {currentPage === 'deaths' && (
+            <DeathsView 
+              onSelectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
+            />
+          )}
+          {currentPage === 'houses' && (
+            <HousesView 
+              onSelectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
+            />
+          )}
+          {currentPage === 'guilds' && (
+            <GuildsView 
+              onSelectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
+            />
+          )}
+          {currentPage === 'character_profile' && (
+            <CharacterProfileView 
+              initialCharName={inspectedCharacter}
+              onSelectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
+            />
+          )}
+          {currentPage === 'changelog' && (
+            <ChangelogView isGM={isGM} />
+          )}
+          {currentPage === 'helpdesk' && (
+            <HelpdeskView isGM={isGM} />
+          )}
+          {currentPage === 'shop' && (
+            <ShopView />
+          )}
+          {currentPage === 'db_diagnostic' && (
+            <DatabaseDiagnosticView />
+          )}
           {currentPage === 'server_info' && <ServerInfoView stats={serverStats} />}
           {currentPage === 'downloads' && (
             <DownloadsView clientDownloadUrl={settings.clientDownloadUrl} />

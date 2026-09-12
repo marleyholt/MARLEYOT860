@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ShieldAlert, 
   Crown, 
@@ -13,7 +13,10 @@ import {
   Server,
   FileCheck,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Database,
+  Search,
+  User
 } from 'lucide-react';
 import { AccountSession, PortalSettings, PlayerCharacter } from '../types';
 
@@ -28,7 +31,7 @@ interface AdminViewProps {
 export const AdminView: React.FC<AdminViewProps> = ({
   session,
   settings,
-  characters,
+  characters: initialCharacters,
   onSaveSettings,
   onNavigate,
 }) => {
@@ -40,6 +43,50 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isBannerDragging, setIsBannerDragging] = useState(false);
+
+  // Dados reais do MariaDB
+  const [dbPlayers, setDbPlayers] = useState<any[]>([]);
+  const [loadingPlayers, setLoadingPlayers] = useState(false);
+  const [playerFilter, setPlayerFilter] = useState('');
+  const [dbStatus, setDbStatus] = useState<any>(null);
+
+  const fetchDbData = async () => {
+    setLoadingPlayers(true);
+    try {
+      const [pRes, sRes] = await Promise.all([
+        fetch('/api/admin/players'),
+        fetch('/api/db-status')
+      ]);
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        if (Array.isArray(pData)) {
+          setDbPlayers(pData);
+        }
+      }
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        setDbStatus(sData);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar dados do admin no MariaDB:', e);
+    } finally {
+      setLoadingPlayers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDbData();
+  }, []);
+
+  const rawList = dbPlayers.length > 0 ? dbPlayers : initialCharacters;
+  const displayList = rawList.filter((c: any) => {
+    if (!playerFilter.trim()) return true;
+    const term = playerFilter.toLowerCase();
+    const nameMatch = c.name?.toLowerCase().includes(term);
+    const accMatch = c.accountName?.toLowerCase().includes(term);
+    const vocMatch = c.vocation?.toLowerCase().includes(term);
+    return nameMatch || accMatch || vocMatch;
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
@@ -650,16 +697,63 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </form>
       </div>
 
-      {/* Lista Rápida de Personagens no Servidor */}
+      {/* Informações e Status do Banco de Dados MariaDB */}
       <div className="bg-[#121612] border-2 border-[#2b3d2b] rounded-lg p-5 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#213323] pb-3">
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-[#facc15]" />
+            <h3 className="text-xs font-bold text-[#facc15] uppercase tracking-wider font-serif">
+              Status da Conexão MariaDB
+            </h3>
+          </div>
+          {dbStatus && (
+            <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1.5 font-semibold">
+                <span className={`w-2 h-2 rounded-full ${dbStatus.connected ? 'bg-[#22c55e]' : 'bg-[#e11d48]'}`}></span>
+                {dbStatus.connected ? (
+                  <span className="text-[#86efac]">Conectado ({dbStatus.host}:{dbStatus.port})</span>
+                ) : (
+                  <span className="text-rose-400">Offline / Fallback ({dbStatus.host})</span>
+                )}
+              </span>
+              <span className="text-neutral-400 text-[11px] font-mono">
+                Database: <strong className="text-neutral-200">{dbStatus.database}</strong>
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Barra de Busca e Recarregamento */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-2">
             <FileCheck className="w-4 h-4 text-[#22c55e]" />
             <h3 className="text-xs font-bold text-[#facc15] uppercase tracking-wider font-serif">
-              Personagens Registrados no Servidor ({characters.length})
+              Personagens Cadastrados no Banco ({displayList.length})
             </h3>
           </div>
-          <span className="text-[11px] text-neutral-400">Banco de Dados: marleyot86</span>
+
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-2" />
+              <input
+                type="text"
+                placeholder="Filtrar por nome ou conta..."
+                value={playerFilter}
+                onChange={(e) => setPlayerFilter(e.target.value)}
+                className="pl-8 pr-3 py-1 bg-[#0b100c] border border-[#263e29] rounded text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[#facc15]"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={fetchDbData}
+              disabled={loadingPlayers}
+              className="px-3 py-1 bg-[#17291a] hover:bg-[#233d27] border border-[#3b7347] text-[#86efac] rounded text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingPlayers ? 'animate-spin' : ''}`} />
+              {loadingPlayers ? 'Atualizando...' : 'Atualizar'}
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -667,33 +761,61 @@ export const AdminView: React.FC<AdminViewProps> = ({
             <thead className="bg-[#0b100c] text-neutral-400 text-[10px] uppercase font-bold border-b border-[#1e2a1f]">
               <tr>
                 <th className="p-2.5">Nome</th>
+                <th className="p-2.5">Conta</th>
                 <th className="p-2.5">Level</th>
                 <th className="p-2.5">Vocação</th>
                 <th className="p-2.5">Magic Level</th>
+                <th className="p-2.5">Saldo (gps)</th>
                 <th className="p-2.5">Status</th>
+                <th className="p-2.5 text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#182319]">
-              {characters.map((char) => (
-                <tr key={char.id || char.name} className="hover:bg-[#152016]">
-                  <td className="p-2.5 font-bold text-[#facc15] flex items-center gap-1.5">
-                    {char.name.toLowerCase().includes('gm') && (
-                      <Crown className="w-3.5 h-3.5 text-[#eab308]" />
-                    )}
-                    {char.name}
-                  </td>
-                  <td className="p-2.5 text-neutral-200">{char.level}</td>
-                  <td className="p-2.5 text-neutral-300">{char.vocation}</td>
-                  <td className="p-2.5 text-neutral-300">{char.maglevel}</td>
-                  <td className="p-2.5">
-                    {char.online ? (
-                      <span className="text-[#4ade80] font-bold">Online</span>
-                    ) : (
-                      <span className="text-neutral-500">Offline</span>
-                    )}
+              {displayList.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-4 text-center text-neutral-400 text-xs">
+                    Nenhum personagem encontrado.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                displayList.map((char: any) => (
+                  <tr key={char.id || char.name} className="hover:bg-[#152016]">
+                    <td className="p-2.5 font-bold text-[#facc15] flex items-center gap-1.5">
+                      {(char.name.toLowerCase().includes('gm') || char.accountName === '1234567') && (
+                        <Crown className="w-3.5 h-3.5 text-[#eab308]" />
+                      )}
+                      {char.name}
+                    </td>
+                    <td className="p-2.5 font-mono text-neutral-300">
+                      {char.accountName || '-'}
+                    </td>
+                    <td className="p-2.5 font-mono font-bold text-neutral-200">{char.level}</td>
+                    <td className="p-2.5 text-neutral-300">{char.vocation}</td>
+                    <td className="p-2.5 text-neutral-300">{char.maglevel}</td>
+                    <td className="p-2.5 font-mono text-[#facc15]">
+                      {Number(char.balance || 0).toLocaleString()}
+                    </td>
+                    <td className="p-2.5">
+                      {char.online ? (
+                        <span className="text-[#4ade80] font-bold">Online</span>
+                      ) : (
+                        <span className="text-neutral-500">Offline</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onNavigate('character_profile');
+                        }}
+                        className="text-[11px] text-[#facc15] hover:underline"
+                      >
+                        Ver Perfil
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

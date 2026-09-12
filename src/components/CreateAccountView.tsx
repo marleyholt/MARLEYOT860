@@ -18,7 +18,7 @@ export const CreateAccountView: React.FC<CreateAccountProps> = ({ onAccountCreat
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
@@ -51,49 +51,46 @@ export const CreateAccountView: React.FC<CreateAccountProps> = ({ onAccountCreat
 
     setLoading(true);
 
-    // Simulação e gravação persistente local para o portal interativo
-    setTimeout(() => {
-      // Salvar na memória local do navegador para o usuário testar login e gestão imediata
-      const existingAccountsRaw = localStorage.getItem('marleyot_accounts') || '[]';
-      const accounts = JSON.parse(existingAccountsRaw);
+    try {
+      const res = await fetch('/api/accounts/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accountName: accountName.trim(),
+          password: password.trim(),
+          email: email.trim(),
+          characterName: characterName.trim(),
+          vocation,
+          sex: 1 // default male
+        })
+      });
 
-      if (accounts.some((a: any) => a.name.toLowerCase() === accountName.toLowerCase())) {
-        setError(`A conta '${accountName}' já existe no banco de dados.`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Erro ao criar conta no servidor.');
         setLoading(false);
         return;
       }
 
-      const newAccount = {
-        name: accountName,
-        password: password,
-        email: email || `${accountName}@marleyot.duckdns.org`,
-        type: 1,
-        premiumDays: 30, // 30 dias grátis de boas-vindas!
-        characters: [
-          {
-            id: Math.floor(Math.random() * 9000) + 1000,
-            name: characterName,
-            level: 8,
-            vocation: vocation === '1' ? 'Sorcerer' : vocation === '2' ? 'Druid' : vocation === '3' ? 'Paladin' : 'Knight',
-            maglevel: 0,
-            experience: 4200,
-            online: false,
-            town: 'Styller City'
-          }
-        ]
-      };
-
-      accounts.push(newAccount);
-      localStorage.setItem('marleyot_accounts', JSON.stringify(accounts));
-      localStorage.setItem('marleyot_active_session', JSON.stringify(newAccount));
+      // Salvar a sessão retornada pelo backend
+      if (data.account) {
+        localStorage.setItem('marleyot_active_session', JSON.stringify(data.account));
+      }
 
       setLoading(false);
-      setSuccess(`Conta '${accountName}' e personagem '${characterName}' criados com sucesso! Você ganhou 30 dias de Premium Account!`);
-      
+      setSuccess(data.message || `Conta '${accountName}' criada com sucesso no banco de dados!`);
+
       setTimeout(() => {
         onAccountCreated(accountName);
       }, 1500);
-    }, 600);
+    } catch (err: any) {
+      console.error('Falha de rede ao registrar conta:', err);
+      setError(`Falha de conexão com o servidor do MarleyOT: ${err.message}`);
+      setLoading(false);
+    }
   };
 
   return (
