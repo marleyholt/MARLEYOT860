@@ -51,7 +51,28 @@ else ()
 endif ()
 
 find_package(Threads REQUIRED)
-find_package(PugiXML CONFIG REQUIRED)
+
+find_package(PugiXML CONFIG QUIET)
+if (NOT PugiXML_FOUND)
+    find_package(pugixml CONFIG QUIET)
+endif()
+
+if (TARGET pugixml AND NOT TARGET pugixml::pugixml)
+    add_library(pugixml::pugixml ALIAS pugixml)
+elseif (NOT TARGET pugixml::pugixml)
+    find_path(PUGIXML_INCLUDE_DIR pugixml.hpp)
+    find_library(PUGIXML_LIBRARY NAMES pugixml)
+    if (PUGIXML_LIBRARY)
+        add_library(pugixml::pugixml UNKNOWN IMPORTED)
+        set_target_properties(pugixml::pugixml PROPERTIES
+            IMPORTED_LOCATION "${PUGIXML_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${PUGIXML_INCLUDE_DIR}"
+        )
+    else()
+        find_package(PugiXML REQUIRED)
+    endif()
+endif()
+
 find_package(Lua54 REQUIRED)
 
 find_package(Boost 1.66.0 REQUIRED COMPONENTS system iostreams)
