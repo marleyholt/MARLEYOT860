@@ -6,7 +6,14 @@ export type PageId =
   | 'server_info' 
   | 'downloads' 
   | 'guilds'
-  | 'deploy_guide';
+  | 'deploy_guide'
+  | 'admin_panel';
+
+export interface PortalSettings {
+  clientDownloadUrl: string;
+  serverIconUrl: string;
+  serverName: string;
+}
 
 export interface PlayerCharacter {
   id: number;

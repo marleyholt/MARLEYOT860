@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
+import fs from 'fs';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
@@ -11,7 +12,46 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Settings persistence
+const SETTINGS_FILE = path.join(process.cwd(), 'portal_settings.json');
+
+interface PortalSettingsData {
+  clientDownloadUrl: string;
+  serverIconUrl: string;
+  serverName: string;
+}
+
+function getSettings(): PortalSettingsData {
+  const defaultSettings: PortalSettingsData = {
+    clientDownloadUrl: 'http://marleyot.duckdns.org/downloads/MarleyOT-ClientV8.zip',
+    serverIconUrl: '',
+    serverName: 'MarleyOT 8.60',
+  };
+
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = fs.readFileSync(SETTINGS_FILE, 'utf-8');
+      return { ...defaultSettings, ...JSON.parse(data) };
+    }
+  } catch (e) {
+    console.error('Error reading portal_settings.json:', e);
+  }
+  return defaultSettings;
+}
+
+function saveSettings(settings: Partial<PortalSettingsData>): PortalSettingsData {
+  const current = getSettings();
+  const updated = { ...current, ...settings };
+  try {
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error writing portal_settings.json:', e);
+  }
+  return updated;
+}
 
 // MariaDB / MySQL configuration for MarleyOT 8.6
 interface DbConfig {
@@ -128,6 +168,21 @@ app.get('/api/status', async (req: Request, res: Response) => {
       maxPlayers: 500,
     });
   }
+});
+
+// 2.1 Settings endpoints
+app.get('/api/settings', (req: Request, res: Response) => {
+  res.json(getSettings());
+});
+
+app.post('/api/admin/settings', (req: Request, res: Response) => {
+  const { clientDownloadUrl, serverIconUrl, serverName } = req.body;
+  const updated = saveSettings({
+    clientDownloadUrl: clientDownloadUrl || undefined,
+    serverIconUrl: serverIconUrl !== undefined ? serverIconUrl : undefined,
+    serverName: serverName || undefined,
+  });
+  res.json({ success: true, settings: updated });
 });
 
 // 3. Highscores

@@ -17,13 +17,15 @@ interface AccountManagementProps {
   onLogin: (accountName: string, pass: string) => boolean;
   onLogout: () => void;
   onCharacterCreated: (newChar: PlayerCharacter) => void;
+  onOpenAdmin?: () => void;
 }
 
 export const AccountManagementView: React.FC<AccountManagementProps> = ({
   session,
   onLogin,
   onLogout,
-  onCharacterCreated
+  onCharacterCreated,
+  onOpenAdmin
 }) => {
   const [loginAcc, setLoginAcc] = useState('');
   const [loginPass, setLoginPass] = useState('');
@@ -210,6 +212,40 @@ export const AccountManagementView: React.FC<AccountManagementProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Banner GM / Staff se for conta GOD */}
+        {(session.type >= 4 || session.accountName === '1234567') && (
+          <div className="mx-6 mb-6 p-4 bg-gradient-to-r from-[#292209] to-[#1a1505] border-2 border-[#eab308] rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#121004] border border-[#facc15] rounded">
+                <Crown className="w-6 h-6 text-[#facc15]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#facc15] uppercase font-serif">
+                    Acesso Privilegiado de Administrador (GM)
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-[#dc2626] text-white text-[9px] font-black uppercase">
+                    GOD
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-300">
+                  Você tem acesso total para gerenciar o servidor, alterar o link de download do client e o ícone do servidor.
+                </p>
+              </div>
+            </div>
+
+            {onOpenAdmin && (
+              <button
+                id="btn-goto-admin"
+                onClick={onOpenAdmin}
+                className="px-5 py-2.5 bg-gradient-to-r from-[#eab308] to-[#facc15] hover:brightness-110 text-neutral-950 font-black text-xs uppercase tracking-wider rounded border border-[#fef08a] shadow-lg shrink-0 transition-all"
+              >
+                Abrir Painel de Administração
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Characters List Table */}

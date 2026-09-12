@@ -1,7 +1,13 @@
 import React from 'react';
 import { Download, Monitor, CheckCircle, Shield, FileText, ArrowRight } from 'lucide-react';
 
-export const DownloadsView: React.FC = () => {
+interface DownloadsViewProps {
+  clientDownloadUrl?: string;
+}
+
+export const DownloadsView: React.FC<DownloadsViewProps> = ({ 
+  clientDownloadUrl = 'http://marleyot.duckdns.org/downloads/MarleyOT-ClientV8.zip' 
+}) => {
   return (
     <div className="space-y-6">
       <div className="bg-[#121612] border-2 border-[#2b3d2b] rounded-lg shadow-2xl overflow-hidden">
@@ -46,7 +52,9 @@ export const DownloadsView: React.FC = () => {
 
             <a
               id="download-otclient-btn"
-              href="http://marleyot.duckdns.org/downloads/MarleyOT-ClientV8.zip"
+              href={clientDownloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-[#16a34a] to-[#22c55e] hover:brightness-110 text-neutral-950 font-bold text-xs uppercase tracking-wider rounded shadow border border-[#86efac] flex items-center justify-center gap-2 shrink-0 transition-all"
             >
               <Download className="w-4 h-4" />

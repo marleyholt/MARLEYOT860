@@ -12,7 +12,8 @@ import {
   Server, 
   Users,
   Compass,
-  Cpu
+  Cpu,
+  Crown
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,6 +21,8 @@ interface SidebarProps {
   onNavigate: (page: PageId) => void;
   serverStats: ServerStats;
   isLoggedIn: boolean;
+  isGM?: boolean;
+  serverIconUrl?: string;
   onLogout: () => void;
 }
 
@@ -28,10 +31,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   serverStats,
   isLoggedIn,
+  isGM = false,
+  serverIconUrl,
   onLogout
 }) => {
   return (
     <aside className="w-full lg:w-64 shrink-0 space-y-5">
+      {/* Seção Exclusiva para GM / GOD logado */}
+      {isGM && (
+        <div className="bg-gradient-to-br from-[#1c1808] to-[#121612] border-2 border-[#eab308] rounded-lg shadow-xl p-3 space-y-2">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#eab308]/40">
+            <div className="flex items-center gap-1.5">
+              <Crown className="w-4 h-4 text-[#facc15]" />
+              <span className="text-[11px] font-black uppercase tracking-wider text-[#facc15] font-serif">
+                Painel do GM (GOD)
+              </span>
+            </div>
+            <span className="px-1.5 py-0.5 rounded bg-[#dc2626] text-white text-[9px] font-black tracking-widest uppercase animate-pulse">
+              STAFF ATIVO
+            </span>
+          </div>
+          <button
+            id="nav-btn-admin-panel"
+            onClick={() => onNavigate('admin_panel')}
+            className={`w-full text-left px-3 py-2.5 rounded-md flex items-center gap-2.5 transition-all text-xs font-bold ${
+              currentPage === 'admin_panel'
+                ? 'bg-gradient-to-r from-[#eab308] to-[#facc15] text-neutral-950 shadow-md border border-[#fef08a]'
+                : 'bg-[#292209] hover:bg-[#3d330c] text-[#facc15] border border-[#eab308]/50'
+            }`}
+          >
+            <Shield className="w-4 h-4 text-[#dc2626]" />
+            Gerenciar Servidor & Client
+          </button>
+        </div>
+      )}
+
       {/* Server Status Widget (Znote Style) */}
       <div className="bg-[#121612] border-2 border-[#2b3d2b] rounded-lg shadow-xl overflow-hidden">
         <div className="bg-gradient-to-r from-[#1b4324] via-[#2d5f35] to-[#1b4324] px-4 py-2.5 border-b border-[#3b7347] flex items-center justify-between">
@@ -75,10 +109,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Main Navigation Menu (Classic ZnoteAAC-2 Style) */}
       <div className="bg-[#121612] border-2 border-[#2b3d2b] rounded-lg shadow-xl overflow-hidden">
-        {/* Menu Category: Community */}
+        {/* Menu Category: Community com Ícone na lateral esquerda */}
         <div className="bg-gradient-to-r from-[#182e1c] to-[#121612] px-4 py-2 border-b border-[#2b3d2b]">
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#facc15] font-serif flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-[#e11d48]" />
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#facc15] font-serif flex items-center gap-2">
+            {serverIconUrl ? (
+              <img 
+                src={serverIconUrl} 
+                alt="Ícone Navegação" 
+                className="w-4 h-4 object-contain rounded shrink-0 border border-[#facc15]/60 bg-[#0a0f0b] p-0.5" 
+              />
+            ) : (
+              <Compass className="w-3.5 h-3.5 text-[#e11d48]" />
+            )}
             Navegação Principal
           </span>
         </div>
@@ -170,6 +212,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </span>
         </div>
         <div className="p-2 space-y-1 text-xs">
+          {isGM && (
+            <button
+              id="nav-btn-admin-sub"
+              onClick={() => onNavigate('admin_panel')}
+              className={`w-full text-left px-3 py-2 rounded flex items-center gap-2.5 transition-colors ${
+                currentPage === 'admin_panel'
+                  ? 'bg-[#eab308] text-neutral-950 font-black border-l-4 border-white'
+                  : 'text-[#facc15] hover:bg-[#292209] font-bold'
+              }`}
+            >
+              <Crown className="w-4 h-4 text-[#facc15]" />
+              Painel de Administração
+            </button>
+          )}
+
           <button
             id="nav-btn-deploy"
             onClick={() => onNavigate('deploy_guide')}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PageId, PlayerCharacter, AccountSession, ServerStats } from './types';
+import { PageId, PlayerCharacter, AccountSession, ServerStats, PortalSettings } from './types';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { HomeView } from './components/HomeView';
@@ -9,9 +9,17 @@ import { HighscoresView } from './components/HighscoresView';
 import { ServerInfoView } from './components/ServerInfoView';
 import { DownloadsView } from './components/DownloadsView';
 import { DeployGuideView } from './components/DeployGuideView';
+import { AdminView } from './components/AdminView';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
+
+  // Configurações do Portal (Download do Client, Ícone e Nome)
+  const [settings, setSettings] = useState<PortalSettings>({
+    clientDownloadUrl: 'http://marleyot.duckdns.org/downloads/MarleyOT-ClientV8.zip',
+    serverIconUrl: '',
+    serverName: 'MarleyOT 8.60'
+  });
 
   // Dados do Servidor MarleyOT
   const [serverStats] = useState<ServerStats>({
@@ -69,17 +77,77 @@ export default function App() {
   // Sessão atual do usuário no portal
   const [activeSession, setActiveSession] = useState<AccountSession | null>(null);
 
-  // Carregar contas locais persistidas
+  // Carregar contas locais e configurações persistidas
   useEffect(() => {
     try {
       const savedSession = localStorage.getItem('marleyot_active_session');
       if (savedSession) {
         setActiveSession(JSON.parse(savedSession));
       }
+
+      // Carregar configurações locais
+      const savedSettings = localStorage.getItem('marleyot_portal_settings');
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+
+      // Carregar do servidor backend
+      fetch('/api/settings')
+        .then(res => res.json())
+        .then(data => {
+          if (data && (data.clientDownloadUrl || data.serverIconUrl || data.serverName)) {
+            setSettings(prev => ({
+              ...prev,
+              ...data
+            }));
+          }
+        })
+        .catch(err => console.log('Could not fetch server settings:', err));
     } catch (e) {
       console.error(e);
     }
   }, []);
+
+  // Salvar configurações do Portal
+  const handleSaveSettings = async (newSettings: PortalSettings): Promise<boolean> => {
+    setSettings(newSettings);
+    try {
+      localStorage.setItem('marleyot_portal_settings', JSON.stringify(newSettings));
+      
+      // Atualizar no backend
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newSettings)
+      });
+
+      // Atualizar o favicon se fornecido
+      if (newSettings.serverIconUrl) {
+        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.href = newSettings.serverIconUrl;
+      }
+      return true;
+    } catch (e) {
+      console.error('Erro ao salvar configurações:', e);
+      return false;
+    }
+  };
+
+  // Verificar se o usuário autenticado é GM / GOD
+  const isGM = Boolean(
+    activeSession && (
+      activeSession.type >= 4 ||
+      activeSession.accountName === '1234567' ||
+      activeSession.characters.some(c => c.name.toLowerCase().includes('gm') || c.groupName === 'GOD')
+    )
+  );
 
   const handleLogin = (accountName: string, pass: string): boolean => {
     // 1. Verificar credenciais especiais conhecidas do servidor
@@ -169,7 +237,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#070b08] text-neutral-200 flex flex-col font-sans selection:bg-[#facc15]/30 selection:text-[#facc15]">
       {/* Top Header com estilo ZnoteAAC-2 e cores da Jamaica */}
-      <Header serverName="MarleyOT 8.60" ip={serverStats.ip} />
+      <Header
+        serverName={settings.serverName}
+        ip={serverStats.ip}
+        serverIconUrl={settings.serverIconUrl}
+      />
 
       {/* Main Container */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-6">
@@ -180,6 +252,8 @@ export default function App() {
           serverStats={serverStats}
           isLoggedIn={!!activeSession}
           onLogout={handleLogout}
+          isGM={isGM}
+          serverIconUrl={settings.serverIconUrl}
         />
 
         {/* Content Area */}
@@ -194,11 +268,23 @@ export default function App() {
               onLogin={handleLogin}
               onLogout={handleLogout}
               onCharacterCreated={handleCharacterCreated}
+              onOpenAdmin={() => setCurrentPage('admin_panel')}
+            />
+          )}
+          {currentPage === 'admin_panel' && (
+            <AdminView
+              session={activeSession}
+              settings={settings}
+              characters={characters}
+              onSaveSettings={handleSaveSettings}
+              onNavigate={setCurrentPage}
             />
           )}
           {currentPage === 'highscores' && <HighscoresView characters={characters} />}
           {currentPage === 'server_info' && <ServerInfoView stats={serverStats} />}
-          {currentPage === 'downloads' && <DownloadsView />}
+          {currentPage === 'downloads' && (
+            <DownloadsView clientDownloadUrl={settings.clientDownloadUrl} />
+          )}
           {currentPage === 'deploy_guide' && <DeployGuideView />}
         </main>
       </div>

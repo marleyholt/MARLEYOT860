@@ -4,9 +4,10 @@ import { Sparkles, Crown } from 'lucide-react';
 interface HeaderProps {
   serverName: string;
   ip: string;
+  serverIconUrl?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ serverName, ip }) => {
+export const Header: React.FC<HeaderProps> = ({ serverName, ip, serverIconUrl }) => {
   return (
     <header className="relative w-full border-b-4 border-[#2b3d2b] shadow-2xl bg-[#0a0f0b]">
       {/* Flag Stripes Top Accent (Jamaica Colors) */}
@@ -21,16 +22,32 @@ export const Header: React.FC<HeaderProps> = ({ serverName, ip }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Brand & Logo Style */}
         <div className="flex items-center gap-4 text-center md:text-left">
-          {/* Custom Lion / Emblem Badge */}
-          <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-[#1b4324] via-[#24542c] to-[#121612] border-2 border-[#eab308] flex items-center justify-center shadow-lg shadow-emerald-950/60 shrink-0">
-            <Crown className="w-9 h-9 text-[#facc15] drop-shadow-md" />
+          {/* Custom Emblem / Icon Badge */}
+          <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-[#1b4324] via-[#24542c] to-[#121612] border-2 border-[#eab308] flex items-center justify-center shadow-lg shadow-emerald-950/60 shrink-0 overflow-hidden">
+            {serverIconUrl ? (
+              <img 
+                src={serverIconUrl} 
+                alt="Logo do Servidor" 
+                className="w-12 h-12 object-contain drop-shadow" 
+              />
+            ) : (
+              <Crown className="w-9 h-9 text-[#facc15] drop-shadow-md" />
+            )}
             <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 bg-[#dc2626] border border-[#fef08a] rounded text-[9px] font-black text-white uppercase">
               8.60
             </span>
           </div>
 
           <div>
-            <div className="flex items-center gap-2 justify-center md:justify-start">
+            <div className="flex items-center gap-2.5 justify-center md:justify-start">
+              {/* Ícone na lateral esquerda do nome no título */}
+              {serverIconUrl && (
+                <img 
+                  src={serverIconUrl} 
+                  alt="Ícone" 
+                  className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded-md border border-[#facc15]/80 bg-[#121a13] p-0.5 shadow shrink-0" 
+                />
+              )}
               <h1 className="text-2xl sm:text-3xl font-black tracking-wider text-[#facc15] font-serif uppercase drop-shadow">
                 {serverName}
               </h1>
