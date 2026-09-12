@@ -7,6 +7,7 @@ endif()
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # Ensure to pick up the default triplet from the environment if any. This helps
 # driving the vcpkg triplet in the same way either when starting vcpkg directly,
@@ -21,7 +22,7 @@ project(tfs CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if (NOT WIN32)
-    add_compile_options(-Wall -Wextra -Wnon-virtual-dtor -pedantic -Werror -pipe -fvisibility=hidden)
+    add_compile_options(-Wall -Wextra -Wnon-virtual-dtor -pedantic -fvisibility=hidden -g0 --param=ggc-min-expand=15 --param=ggc-min-heapsize=32768 -fno-var-tracking-assignments)
 endif ()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
@@ -94,14 +95,19 @@ if (ENABLE_TESTING)
 endif()
 
 ### INTERPROCEDURAL_OPTIMIZATION ###
-cmake_policy(SET CMP0069 NEW)
-include(CheckIPOSupported)
-check_ipo_supported(RESULT result OUTPUT error)
-if (result)
-    message(STATUS "IPO / LTO enabled")
-    set_target_properties(tfs PROPERTIES INTERPROCEDURAL_OPTIMIZATION True)
+option(ENABLE_LTO "Enable Link Time Optimization" OFF)
+if (ENABLE_LTO)
+    cmake_policy(SET CMP0069 NEW)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT result OUTPUT error)
+    if (result)
+        message(STATUS "IPO / LTO enabled")
+        set_target_properties(tfs PROPERTIES INTERPROCEDURAL_OPTIMIZATION True)
+    else ()
+        message(STATUS "IPO / LTO not supported: <${error}>")
+    endif ()
 else ()
-    message(STATUS "IPO / LTO not supported: <${error}>")
+    message(STATUS "IPO / LTO disabled for low memory safety")
 endif ()
 ### END INTERPROCEDURAL_OPTIMIZATION ###
 
