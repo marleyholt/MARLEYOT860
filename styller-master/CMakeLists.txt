@@ -57,19 +57,19 @@ if (NOT PugiXML_FOUND)
     find_package(pugixml CONFIG QUIET)
 endif()
 
-if (TARGET pugixml AND NOT TARGET pugixml::pugixml)
-    add_library(pugixml::pugixml ALIAS pugixml)
-elseif (NOT TARGET pugixml::pugixml)
+if (TARGET pugixml::pugixml)
+    set(PUGIXML_LIBRARIES pugixml::pugixml)
+elseif (TARGET pugixml)
+    set_target_properties(pugixml PROPERTIES IMPORTED_GLOBAL TRUE)
+    set(PUGIXML_LIBRARIES pugixml)
+else()
     find_path(PUGIXML_INCLUDE_DIR pugixml.hpp)
     find_library(PUGIXML_LIBRARY NAMES pugixml)
     if (PUGIXML_LIBRARY)
-        add_library(pugixml::pugixml UNKNOWN IMPORTED)
-        set_target_properties(pugixml::pugixml PROPERTIES
-            IMPORTED_LOCATION "${PUGIXML_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${PUGIXML_INCLUDE_DIR}"
-        )
+        set(PUGIXML_LIBRARIES "${PUGIXML_LIBRARY}")
     else()
         find_package(PugiXML REQUIRED)
+        set(PUGIXML_LIBRARIES pugixml)
     endif()
 endif()
 
