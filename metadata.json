@@ -1,6 +1,6 @@
 {
-  "name": "MarleyOT 8.5 - Styller Yurots",
-  "description": "Painel interativo e gerador de scripts para automação, configuração e implantação do Styller YurOTS 8.60 no Ubuntu 20.04.",
+  "name": "MarleyOT 8.6 - ZnoteAAC Portal",
+  "description": "Portal oficial ZnoteAAC-2 do MarleyOT 8.6 com paleta Reggae/Jamaica, criação de contas, gestão de personagens, rankings e download do cliente.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
