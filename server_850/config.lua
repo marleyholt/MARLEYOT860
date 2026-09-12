@@ -147,7 +147,7 @@
 
 	-- Map
 	mapName = "Styller.otbm"
-	mapAuthor = "Léo"
+	mapAuthor = "LÃ©o"
 	randomizeTiles = "yes"
 	useHouseDataStorage = "yes"
 	storeTrash = "no"
