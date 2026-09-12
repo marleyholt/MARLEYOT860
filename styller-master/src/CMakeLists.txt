@@ -1,4 +1,6 @@
-add_subdirectory(luamodules)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/luamodules/CMakeLists.txt")
+	add_subdirectory(luamodules)
+endif()
 
 set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/otpch.cpp
@@ -195,7 +197,7 @@ set(tfs_HDR
 set(tfs_MAIN ${CMAKE_CURRENT_LIST_DIR}/otserv.cpp PARENT_SCOPE)
 
 add_library(tfslib ${tfs_SRC})
-include_directories(/usr/include/lua5.4)
+include_directories(/usr/include/lua5.4 /usr/local/include /usr/local/include/lua5.4 ${LUA_INCLUDE_DIR})
 target_link_libraries(tfslib PRIVATE
 	Boost::iostreams
 	Boost::system
