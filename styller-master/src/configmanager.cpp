@@ -10,10 +10,28 @@
 #include "monster.h"
 #include "pugicast.h"
 
-#ifdef _WIN32
-#include "lua.hpp"
-#elif defined(__linux__)
+#if __has_include(<lua5.4/lua.hpp>)
+#include <lua5.4/lua.hpp>
+#elif __has_include("lua5.4/lua.hpp")
 #include "lua5.4/lua.hpp"
+#elif __has_include(<lua.hpp>)
+#include <lua.hpp>
+#elif __has_include("lua.hpp")
+#include "lua.hpp"
+#elif __has_include(<lua.h>)
+extern "C" {
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+}
+#elif __has_include(<lua5.4/lua.h>)
+extern "C" {
+#include <lua5.4/lua.h>
+#include <lua5.4/lualib.h>
+#include <lua5.4/lauxlib.h>
+}
+#else
+#include "lua.hpp"
 #endif
 
 #if LUA_VERSION_NUM >= 502
