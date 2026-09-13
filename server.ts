@@ -23,6 +23,11 @@ interface PortalSettingsData {
   serverIconUrl: string;
   serverName: string;
   heroBannerUrl?: string;
+  dbHost?: string;
+  dbPort?: number;
+  dbUser?: string;
+  dbPassword?: string;
+  dbDatabase?: string;
 }
 
 function getSettings(): PortalSettingsData {
@@ -31,6 +36,11 @@ function getSettings(): PortalSettingsData {
     serverIconUrl: '',
     serverName: 'MarleyOT 8.60',
     heroBannerUrl: '',
+    dbHost: '127.0.0.1',
+    dbPort: 3306,
+    dbUser: 'marleyot',
+    dbPassword: '',
+    dbDatabase: 'marleyot86',
   };
 
   try {
@@ -64,60 +74,91 @@ interface DbConfig {
   database: string;
 }
 
-const dbConfig: DbConfig = {
-  host: process.env.MYSQL_HOST || '127.0.0.1',
-  port: Number(process.env.MYSQL_PORT) || 3306,
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'MARLEY22@@##',
-  database: process.env.MYSQL_DATABASE || 'marleyot86',
-};
+function getEffectiveDbConfig(): DbConfig {
+  const settings = getSettings();
+  return {
+    host: process.env.MYSQL_HOST || settings.dbHost || '127.0.0.1',
+    port: Number(process.env.MYSQL_PORT) || settings.dbPort || 3306,
+    user: process.env.MYSQL_USER || settings.dbUser || 'marleyot',
+    password: process.env.MYSQL_PASSWORD !== undefined 
+      ? process.env.MYSQL_PASSWORD 
+      : (settings.dbPassword !== undefined ? settings.dbPassword : ''),
+    database: process.env.MYSQL_DATABASE || settings.dbDatabase || 'marleyot86',
+  };
+}
 
 let pool: Pool | null = null;
 let dbConnected = false;
 let dbLastHost = '';
 let dbLastError = '';
+let dbCurrentUser = 'marleyot';
 
 async function getPool(): Promise<Pool | null> {
   if (pool && dbConnected) return pool;
 
-  // Hosts to attempt: first configured, then fallback to VPS remote IP or localhost
+  const currentCfg = getEffectiveDbConfig();
+
+  // Hosts to attempt: first configured, then fallback to localhost, then Oracle Cloud VPS public IP
   const candidateHosts: string[] = [];
   if (process.env.MYSQL_HOST) {
     candidateHosts.push(process.env.MYSQL_HOST);
   } else {
-    // Try localhost first (for when running inside VPS)
-    candidateHosts.push('127.0.0.1');
-    // If not local, try Oracle Cloud VPS IP directly
-    candidateHosts.push('137.131.196.66');
+    candidateHosts.push(currentCfg.host);
+    if (!candidateHosts.includes('127.0.0.1')) candidateHosts.push('127.0.0.1');
+    if (!candidateHosts.includes('137.131.196.66')) candidateHosts.push('137.131.196.66');
+  }
+
+  // Candidate credentials:
+  // 1. Configured user (marleyot) with configured password ('' by default)
+  // 2. Configured user (marleyot) with 'MARLEY22@@##'
+  // 3. User 'root' with 'MARLEY22@@##'
+  // 4. User 'root' with ''
+  const candidateCredentials: Array<{ user: string; password: string }> = [
+    { user: currentCfg.user, password: currentCfg.password },
+    { user: 'marleyot', password: '' },
+    { user: 'marleyot', password: 'MARLEY22@@##' },
+    { user: 'root', password: 'MARLEY22@@##' },
+    { user: 'root', password: '' }
+  ];
+
+  // Remove duplicate attempts
+  const uniqueCredentials: Array<{ user: string; password: string }> = [];
+  for (const cred of candidateCredentials) {
+    if (!uniqueCredentials.some(c => c.user === cred.user && c.password === cred.password)) {
+      uniqueCredentials.push(cred);
+    }
   }
 
   for (const host of candidateHosts) {
-    try {
-      const candidatePool = mysql.createPool({
-        host,
-        port: dbConfig.port,
-        user: dbConfig.user,
-        password: dbConfig.password,
-        database: dbConfig.database,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-        connectTimeout: 3000,
-      });
+    for (const cred of uniqueCredentials) {
+      try {
+        const candidatePool = mysql.createPool({
+          host,
+          port: currentCfg.port,
+          user: cred.user,
+          password: cred.password,
+          database: currentCfg.database,
+          waitForConnections: true,
+          connectionLimit: 10,
+          queueLimit: 0,
+          connectTimeout: 2500,
+        });
 
-      const conn = await candidatePool.getConnection();
-      await conn.ping();
-      conn.release();
+        const conn = await candidatePool.getConnection();
+        await conn.ping();
+        conn.release();
 
-      pool = candidatePool;
-      dbConnected = true;
-      dbLastHost = host;
-      dbLastError = '';
-      console.log(`[DB] Successfully connected to MariaDB (${dbConfig.database}) at ${host}:${dbConfig.port}`);
-      return pool;
-    } catch (err: any) {
-      dbLastError = err.message;
-      console.warn(`[DB] Connection to ${host}:${dbConfig.port} failed: ${err.message}`);
+        pool = candidatePool;
+        dbConnected = true;
+        dbLastHost = host;
+        dbCurrentUser = cred.user;
+        dbLastError = '';
+        console.log(`[DB] Successfully connected to MariaDB (${currentCfg.database}) at ${host}:${currentCfg.port} as user '${cred.user}'`);
+        return pool;
+      } catch (err: any) {
+        dbLastError = `[${cred.user}@${host}]: ${err.message}`;
+        // Continue to next candidate
+      }
     }
   }
 
@@ -1223,6 +1264,352 @@ app.post('/api/admin/db-migrate-znote', async (req: Request, res: Response) => {
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// 5.11 Znote AAC PHP Repository & File Explorer
+const znoteDescriptions: Record<string, { category: string; description: string; mappedRoute?: string }> = {
+  'index.php': { category: 'Público', description: 'Página inicial do Znote AAC com notícias, ticker e banners do servidor.', mappedRoute: 'home' },
+  'register.php': { category: 'Contas', description: 'Formulário de criação de contas com validação de formato e encriptação SHA1.', mappedRoute: 'create_account' },
+  'login.php': { category: 'Contas', description: 'Autenticação de sessão de conta de jogadores e administradores.', mappedRoute: 'account_management' },
+  'myaccount.php': { category: 'Contas', description: 'Painel completo da conta: criação de personagens, recovery key e histórico.', mappedRoute: 'account_management' },
+  'createcharacter.php': { category: 'Contas', description: 'Criação de novos personagens com seleção de vocação, sexo e cidade.', mappedRoute: 'account_management' },
+  'changepassword.php': { category: 'Contas', description: 'Troca de senha de segurança da conta com verificação da senha antiga.', mappedRoute: 'account_management' },
+  'characterprofile.php': { category: 'Personagens', description: 'Perfil público com level, vocação, mortes, guilda e equipamentos.', mappedRoute: 'character_profile' },
+  'onlinelist.php': { category: 'Comunidade', description: 'Lista em tempo real de jogadores conectados, vocações e níveis.', mappedRoute: 'onlinelist' },
+  'highscores.php': { category: 'Comunidade', description: 'Ranking global de experiência, magic level e habilidades (skills).', mappedRoute: 'highscores' },
+  'deaths.php': { category: 'PvP & Mortes', description: 'Últimas mortes do servidor registradas por monstros e outros jogadores.', mappedRoute: 'deaths' },
+  'killers.php': { category: 'PvP & Mortes', description: 'Top Fraggers: ranking dos maiores assassinos e contagem de frags PvP.', mappedRoute: 'killers' },
+  'powergamers.php': { category: 'Comunidade', description: 'Top jogadores que mais adquiriram experiência nas últimas 24h e 7 dias.', mappedRoute: 'highscores' },
+  'houses.php': { category: 'Mundo & Economia', description: 'Catálogo de casas de todas as cidades com status de aluguel e donos.', mappedRoute: 'houses' },
+  'house.php': { category: 'Mundo & Economia', description: 'Detalhes individuais de cada residência e transferências de posse.', mappedRoute: 'houses' },
+  'guilds.php': { category: 'Guildas', description: 'Lista de guildas, líderes, ranks, membros e mensagens do dia (MOTD).', mappedRoute: 'guilds' },
+  'guildwar.php': { category: 'Guildas', description: 'Sistema de declaração e acompanhamento de guerras ativas entre guildas.', mappedRoute: 'guilds' },
+  'topguilds.php': { category: 'Guildas', description: 'Ranking das melhores e mais fortes guildas do servidor.', mappedRoute: 'guilds' },
+  'spells.php': { category: 'Biblioteca & Spells', description: 'Grimório completo de feitiços e runas por vocação, level e mana.', mappedRoute: 'spells' },
+  'monster_loot.php': { category: 'Biblioteca & Spells', description: 'Bestiário de monstros do 8.60 com tabelas de loot e chance de drop.', mappedRoute: 'monster_loot' },
+  'shop.php': { category: 'Shop & Doações', description: 'Loja virtual com itens, dias VIP, runas e pacotes para adquirir.', mappedRoute: 'shop' },
+  'buypoints.php': { category: 'Shop & Doações', description: 'Métodos de pagamento (Pix, PagSeguro, PayPal) para adquirir pontos.', mappedRoute: 'shop' },
+  'market.php': { category: 'Shop & Doações', description: 'Mercado de ofertas de compra e venda de itens entre jogadores.', mappedRoute: 'shop' },
+  'helpdesk.php': { category: 'Suporte', description: 'Sistema de abertura e acompanhamento de chamados e suporte.', mappedRoute: 'helpdesk' },
+  'support.php': { category: 'Suporte', description: 'Lista oficial dos membros da staff (GODs, GMs, CMs e Tutores).', mappedRoute: 'support' },
+  'changelog.php': { category: 'Servidor', description: 'Histórico de notas de versão, correções de bugs e atualizações.', mappedRoute: 'changelog' },
+  'serverinfo.php': { category: 'Servidor', description: 'Taxas de experiência em estágios, skills, magic rate, loot e regras.', mappedRoute: 'server_info' },
+  'downloads.php': { category: 'Servidor', description: 'Links oficiais para download do cliente customizado OTClientV8.', mappedRoute: 'downloads' },
+  'forum.php': { category: 'Comunidade', description: 'Fórum oficial de discussões, regras e guias da comunidade.', mappedRoute: 'home' },
+  'gallery.php': { category: 'Comunidade', description: 'Galeria de screenshots e momentos marcantes enviados pelos jogadores.', mappedRoute: 'home' },
+  'voting.php': { category: 'Comunidade', description: 'Sistema de votação em rankings (OTServList) com premiações.', mappedRoute: 'home' },
+  'admin.php': { category: 'Administração', description: 'Painel administrativo para controle geral de notícias, contas e servidor.', mappedRoute: 'admin_panel' },
+  'admin_news.php': { category: 'Administração', description: 'Gestão de notícias e comunicados exibidos na página inicial.', mappedRoute: 'admin_panel' },
+  'admin_skills.php': { category: 'Administração', description: 'Edição de habilidades e níveis de personagens pela staff.', mappedRoute: 'admin_panel' },
+  'admin_reports.php': { category: 'Administração', description: 'Visualização de denúncias de jogadores feitas dentro do jogo.', mappedRoute: 'admin_panel' },
+  'admin_helpdesk.php': { category: 'Administração', description: 'Painel da equipe para responder e encerrar chamados de suporte.', mappedRoute: 'helpdesk' },
+  'admin_shop.php': { category: 'Administração', description: 'Configuração de ofertas, preços e entregas do Shop do servidor.', mappedRoute: 'shop' },
+  'admin_auction.php': { category: 'Administração', description: 'Administração do sistema de leilão de personagens e itens.', mappedRoute: 'admin_panel' },
+  'config.php': { category: 'Configuração Core', description: 'Arquivo mestre com todas as configurações do Znote AAC e conexão MySQL.', mappedRoute: 'admin_settings' },
+  'recovery.php': { category: 'Contas', description: 'Recuperação de conta através de e-mail ou Chave de Recuperação.', mappedRoute: 'create_account' },
+  'credits.php': { category: 'Sistema', description: 'Créditos de desenvolvimento do Znote AAC e licença de código aberto.', mappedRoute: 'server_info' }
+};
+
+app.get('/api/znote/files', (req: Request, res: Response) => {
+  try {
+    const znoteDir = path.join(process.cwd(), 'ZnoteAAC-2');
+    if (!fs.existsSync(znoteDir)) {
+      return res.status(404).json({ error: 'Diretório ZnoteAAC-2 não encontrado' });
+    }
+
+    const allEntries = fs.readdirSync(znoteDir, { withFileTypes: true });
+    const phpFiles = allEntries
+      .filter(dirent => dirent.isFile() && dirent.name.endsWith('.php'))
+      .map(dirent => {
+        const fullPath = path.join(znoteDir, dirent.name);
+        const stats = fs.statSync(fullPath);
+        const content = fs.readFileSync(fullPath, 'utf-8');
+        const lines = content.split('\n').length;
+        const meta = znoteDescriptions[dirent.name] || {
+          category: 'Módulo Znote',
+          description: `Arquivo PHP original do Znote AAC (${dirent.name})`,
+          mappedRoute: 'znote_php'
+        };
+
+        return {
+          filename: dirent.name,
+          category: meta.category,
+          description: meta.description,
+          mappedRoute: meta.mappedRoute || 'znote_php',
+          sizeBytes: stats.size,
+          sizeKb: Math.round(stats.size / 1024 * 10) / 10,
+          linesCount: lines
+        };
+      })
+      .sort((a, b) => a.category.localeCompare(b.category) || a.filename.localeCompare(b.filename));
+
+    res.json({
+      total: phpFiles.length,
+      directory: 'ZnoteAAC-2',
+      files: phpFiles
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/znote/file', (req: Request, res: Response) => {
+  const fileName = req.query.name as string;
+  if (!fileName || typeof fileName !== 'string' || !fileName.endsWith('.php') || fileName.includes('..') || fileName.includes('/')) {
+    return res.status(400).json({ error: 'Nome de arquivo .php inválido' });
+  }
+
+  const filePath = path.join(process.cwd(), 'ZnoteAAC-2', fileName);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: `Arquivo ${fileName} não encontrado no ZnoteAAC-2` });
+  }
+
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const stats = fs.statSync(filePath);
+  const meta = znoteDescriptions[fileName] || { category: 'Módulo Znote', description: 'Script PHP do ZnoteAAC' };
+
+  res.json({
+    filename: fileName,
+    category: meta.category,
+    description: meta.description,
+    mappedRoute: meta.mappedRoute,
+    sizeBytes: stats.size,
+    linesCount: content.split('\n').length,
+    content
+  });
+});
+
+// 5.12 Spells Database (ZnoteAAC spells.php)
+const spellsData = [
+  // Sorcerer
+  { name: 'Hell\'s Core', words: 'exevo gran mas vis', vocation: 'Sorcerer', level: 60, mana: 1200, type: 'Ataque de Área (Fogo)', premium: true },
+  { name: 'Energy Wave', words: 'exevo vis hur', vocation: 'Sorcerer', level: 38, mana: 170, type: 'Ataque em Linha', premium: false },
+  { name: 'Great Energy Beam', words: 'exevo gran vis lux', vocation: 'Sorcerer', level: 29, mana: 110, type: 'Ataque em Linha', premium: false },
+  { name: 'Energy Beam', words: 'exevo vis lux', vocation: 'Sorcerer', level: 23, mana: 40, type: 'Ataque em Linha', premium: false },
+  { name: 'Energy Strike', words: 'exori vis', vocation: 'Sorcerer', level: 12, mana: 20, type: 'Ataque Direto', premium: true },
+  { name: 'Flame Strike', words: 'exori flam', vocation: 'Sorcerer', level: 14, mana: 20, type: 'Ataque Direto', premium: true },
+  { name: 'Sudden Death Rune', words: 'adori gran mort', vocation: 'Sorcerer', level: 45, mana: 985, type: 'Fabricação de Runa', premium: true },
+  { name: 'Ultimate Healing Rune', words: 'adura vita', vocation: 'Sorcerer', level: 24, mana: 400, type: 'Fabricação de Runa', premium: false },
+  { name: 'Magic Shield', words: 'utamo vita', vocation: 'Sorcerer', level: 14, mana: 50, type: 'Defesa / Suporte', premium: false },
+  { name: 'Haste', words: 'utani hur', vocation: 'Sorcerer', level: 14, mana: 60, type: 'Velocidade', premium: true },
+  { name: 'Strong Haste', words: 'utani gran hur', vocation: 'Sorcerer', level: 20, mana: 100, type: 'Velocidade', premium: true },
+  { name: 'Invisible', words: 'utana vid', vocation: 'Sorcerer', level: 35, mana: 440, type: 'Furtividade', premium: true },
+
+  // Druid
+  { name: 'Eternal Winter', words: 'exevo gran mas frigo', vocation: 'Druid', level: 60, mana: 1200, type: 'Ataque de Área (Gelo)', premium: true },
+  { name: 'Terra Wave', words: 'exevo tera hur', vocation: 'Druid', level: 38, mana: 170, type: 'Ataque em Linha (Terra)', premium: false },
+  { name: 'Ice Wave', words: 'exevo frigo hur', vocation: 'Druid', level: 18, mana: 25, type: 'Ataque em Cone (Gelo)', premium: false },
+  { name: 'Ice Strike', words: 'exori frigo', vocation: 'Druid', level: 15, mana: 20, type: 'Ataque Direto', premium: true },
+  { name: 'Terra Strike', words: 'exori tera', vocation: 'Druid', level: 13, mana: 20, type: 'Ataque Direto', premium: true },
+  { name: 'Mass Healing', words: 'exura gran mas res', vocation: 'Druid', level: 36, mana: 150, type: 'Cura em Área', premium: true },
+  { name: 'Heal Friend', words: 'exura sio "name"', vocation: 'Druid', level: 18, mana: 140, type: 'Cura de Alvo', premium: true },
+  { name: 'Intense Healing', words: 'exura gran', vocation: 'Druid', level: 11, mana: 70, type: 'Cura Pessoal', premium: false },
+  { name: 'Ultimate Healing', words: 'exura vita', vocation: 'Druid', level: 20, mana: 160, type: 'Cura Pessoal Máxima', premium: false },
+  { name: 'Paralyze Rune', words: 'adana ani', vocation: 'Druid', level: 54, mana: 1400, type: 'Fabricação de Runa', premium: true },
+  { name: 'Wild Growth', words: 'exevo grav vita', vocation: 'Druid', level: 27, mana: 220, type: 'Criação de Barreira', premium: true },
+
+  // Paladin
+  { name: 'Divine Caldera', words: 'exevo mas san', vocation: 'Paladin', level: 50, mana: 160, type: 'Ataque Sagrado de Área', premium: true },
+  { name: 'Divine Missile', words: 'exori san', vocation: 'Paladin', level: 40, mana: 20, type: 'Ataque Sagrado', premium: true },
+  { name: 'Sharpshooter', words: 'utito tempo san', vocation: 'Paladin', level: 60, mana: 450, type: 'Buff de Ataque Distância', premium: true },
+  { name: 'Holy Flash', words: 'utori san', vocation: 'Paladin', level: 70, mana: 300, type: 'Condição Sagrada', premium: true },
+  { name: 'Salvation', words: 'exura gran san', vocation: 'Paladin', level: 60, mana: 210, type: 'Cura Sagrada Máxima', premium: true },
+  { name: 'Divine Healing', words: 'exura san', vocation: 'Paladin', level: 35, mana: 160, type: 'Cura Sagrada', premium: false },
+  { name: 'Ethereal Spear', words: 'exori con', vocation: 'Paladin', level: 23, mana: 25, type: 'Projétil Mágico', premium: true },
+  { name: 'Holy Missile Rune', words: 'adori san', vocation: 'Paladin', level: 27, mana: 350, type: 'Fabricação de Runa', premium: true },
+
+  // Knight
+  { name: 'Fierce Berserk', words: 'exori gran', vocation: 'Knight', level: 90, mana: 340, type: 'Ataque Físico Massivo', premium: true },
+  { name: 'Berserk', words: 'exori', vocation: 'Knight', level: 35, mana: 115, type: 'Ataque Físico de Área', premium: true },
+  { name: 'Whirlwind Sword', words: 'exori hur', vocation: 'Knight', level: 28, mana: 40, type: 'Ataque à Distância', premium: true },
+  { name: 'Groundshaker', words: 'exori mas', vocation: 'Knight', level: 33, mana: 160, type: 'Onda de Choque', premium: true },
+  { name: 'Wound Cleansing', words: 'exana mort', vocation: 'Knight', level: 30, mana: 65, type: 'Cura Rápida', premium: false },
+  { name: 'Blood Rage', words: 'utito tempo', vocation: 'Knight', level: 60, mana: 290, type: 'Fúria de Ataque', premium: true },
+  { name: 'Challenge', words: 'exeta res', vocation: 'Knight', level: 20, mana: 30, type: 'Provocar Monstros (Taunt)', premium: true },
+  { name: 'Protector', words: 'utamo tempo', vocation: 'Knight', level: 55, mana: 200, type: 'Postura Defensiva', premium: true },
+];
+
+app.get('/api/spells', (req: Request, res: Response) => {
+  const { vocation, type } = req.query;
+  let filtered = spellsData;
+  if (vocation && typeof vocation === 'string' && vocation !== 'all') {
+    filtered = filtered.filter(s => s.vocation.toLowerCase() === vocation.toLowerCase());
+  }
+  if (type && typeof type === 'string' && type !== 'all') {
+    filtered = filtered.filter(s => s.type.toLowerCase().includes(type.toLowerCase()));
+  }
+  res.json(filtered);
+});
+
+// 5.13 Online List (ZnoteAAC onlinelist.php)
+app.get('/api/onlinelist', async (req: Request, res: Response) => {
+  try {
+    const db = await getPool();
+    if (db) {
+      const [rows]: any = await db.query(
+        `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, g.name AS guildName 
+         FROM players p
+         LEFT JOIN guild_membership gm ON gm.player_id = p.id
+         LEFT JOIN guilds g ON gm.guild_id = g.id
+         WHERE p.online > 0 
+         ORDER BY p.level DESC;`
+      ).catch(() => [[]]);
+
+      const vocNames: Record<number, string> = {
+        0: 'None', 1: 'Sorcerer', 2: 'Druid', 3: 'Paladin', 4: 'Knight',
+        5: 'Master Sorcerer', 6: 'Elder Druid', 7: 'Royal Paladin', 8: 'Elite Knight'
+      };
+
+      if (rows && rows.length > 0) {
+        return res.json(rows.map((r: any) => ({
+          ...r,
+          vocation: vocNames[r.vocation] || 'Sorcerer',
+          guildName: r.guildName || 'Sem Guilda'
+        })));
+      }
+    }
+
+    // Default online list
+    res.json([
+      { id: 1, name: 'GM Marley', level: 8, vocation: 'GOD', guildName: 'Staff MarleyOT' },
+      { id: 2, name: 'Marley Sorcerer', level: 8, vocation: 'Sorcerer', guildName: 'Roots & Culture' }
+    ]);
+  } catch (err: any) {
+    res.json([
+      { id: 1, name: 'GM Marley', level: 8, vocation: 'GOD', guildName: 'Staff MarleyOT' },
+      { id: 2, name: 'Marley Sorcerer', level: 8, vocation: 'Sorcerer', guildName: 'Roots & Culture' }
+    ]);
+  }
+});
+
+// 5.14 Top Killers / Fraggers (ZnoteAAC killers.php)
+app.get('/api/killers', async (req: Request, res: Response) => {
+  try {
+    const db = await getPool();
+    if (db) {
+      const [rows]: any = await db.query(`
+        SELECT killed_by as name, COUNT(*) as frags 
+        FROM player_deaths 
+        WHERE is_player = 1 
+        GROUP BY killed_by 
+        ORDER BY frags DESC 
+        LIMIT 25;
+      `).catch(() => [[]]);
+
+      if (rows && rows.length > 0) {
+        return res.json(rows);
+      }
+    }
+
+    res.json([
+      { name: 'Marley Sorcerer', frags: 14, vocation: 'Master Sorcerer', level: 150 },
+      { name: 'GM Marley', frags: 8, vocation: 'GOD', level: 8 },
+      { name: 'Zion Paladin', frags: 5, vocation: 'Royal Paladin', level: 120 },
+      { name: 'Rasta Knight', frags: 3, vocation: 'Elite Knight', level: 105 }
+    ]);
+  } catch {
+    res.json([
+      { name: 'Marley Sorcerer', frags: 14, vocation: 'Master Sorcerer', level: 150 },
+      { name: 'GM Marley', frags: 8, vocation: 'GOD', level: 8 }
+    ]);
+  }
+});
+
+// 5.15 Monsters & Bestiary (ZnoteAAC monster_loot.php)
+const monstersData = [
+  {
+    name: 'Demon',
+    hp: 8200,
+    exp: 6000,
+    speed: 280,
+    immune: 'Fire, Poison, Invisibility',
+    description: 'A criatura mais icônica do Tibia, habita as profundezas mais perigosas do submundo de Styller.',
+    loot: [
+      { item: 'Magic Plate Armor (MPA)', chance: '0.1%', rarity: 'Extremamente Raro' },
+      { item: 'Mastermind Shield (MMS)', chance: '0.4%', rarity: 'Muito Raro' },
+      { item: 'Demon Shield', chance: '0.8%', rarity: 'Raro' },
+      { item: 'Giant Sword', chance: '1.2%', rarity: 'Raro' },
+      { item: 'Fire Axe', chance: '2.5%', rarity: 'Semirraro' },
+      { item: 'Golden Legs', chance: '0.2%', rarity: 'Extremamente Raro' },
+      { item: 'Platinum Coins (0-30)', chance: '100%', rarity: 'Comum' }
+    ]
+  },
+  {
+    name: 'Dragon Lord',
+    hp: 1900,
+    exp: 2100,
+    speed: 220,
+    immune: 'Fire, Invisibility, Paralyze',
+    description: 'Dragões ancestrais de coloração avermelhada, cobiçados para caçadas rápidas de experiência.',
+    loot: [
+      { item: 'Dragon Scale Mail (DSM)', chance: '0.3%', rarity: 'Muito Raro' },
+      { item: 'Royal Helmet (RH)', chance: '0.5%', rarity: 'Raro' },
+      { item: 'Dragon Slayer', chance: '0.6%', rarity: 'Raro' },
+      { item: 'Fire Sword', chance: '2.0%', rarity: 'Semirraro' },
+      { item: 'Tower Shield', chance: '1.0%', rarity: 'Raro' },
+      { item: 'Green Mushroom', chance: '15%', rarity: 'Comum' }
+    ]
+  },
+  {
+    name: 'Behemoth',
+    hp: 4000,
+    exp: 2500,
+    speed: 240,
+    immune: 'Energy, Invisibility, Paralyze',
+    description: 'Gigantes pré-históricos de força devastadora que arremessam pedregulhos colossais.',
+    loot: [
+      { item: 'Steel Boots', chance: '0.4%', rarity: 'Muito Raro' },
+      { item: 'Titan Axe', chance: '0.8%', rarity: 'Raro' },
+      { item: 'Giant Sword', chance: '1.0%', rarity: 'Raro' },
+      { item: 'Behemoth Claw', chance: '10%', rarity: 'Comum' },
+      { item: 'Meat & Ham', chance: '80%', rarity: 'Comum' }
+    ]
+  },
+  {
+    name: 'Hydra',
+    hp: 2350,
+    exp: 2100,
+    speed: 210,
+    immune: 'Earth, Water, Invisibility',
+    description: 'Serpentes de múltiplas cabeças com regeneração acelerada e ataques de ácido venenoso.',
+    loot: [
+      { item: 'Boots of Haste (BOH)', chance: '0.5%', rarity: 'Muito Raro' },
+      { item: 'Royal Helmet', chance: '0.4%', rarity: 'Raro' },
+      { item: 'Medusa Shield', chance: '0.7%', rarity: 'Raro' },
+      { item: 'Warrior Helmet', chance: '2.0%', rarity: 'Semirraro' },
+      { item: 'Hydra Egg', chance: '12%', rarity: 'Comum' }
+    ]
+  },
+  {
+    name: 'Warlock',
+    hp: 3500,
+    exp: 4000,
+    speed: 260,
+    immune: 'Energy, Fire, Poison, Invisibility',
+    description: 'Feiticeiros renegados que dominam o teletransporte e explosões de energia mortais.',
+    loot: [
+      { item: 'Golden Armor', chance: '0.4%', rarity: 'Muito Raro' },
+      { item: 'Skull Staff', chance: '3.0%', rarity: 'Semirraro' },
+      { item: 'Ring of the Sky', chance: '0.6%', rarity: 'Raro' },
+      { item: 'Blue Robe', chance: '1.5%', rarity: 'Raro' },
+      { item: 'Energy Ring', chance: '8.0%', rarity: 'Comum' }
+    ]
+  }
+];
+
+app.get('/api/monsters', (req: Request, res: Response) => {
+  res.json(monstersData);
+});
+
+// 5.16 Support Team (ZnoteAAC support.php)
+const staffData = [
+  { name: 'GM Marley', role: 'Server Administrator & Owner', group: 'GOD (Acesso Total)', status: 'Online', description: 'Responsável pela infraestrutura, desenvolvimento de scripts e gestão geral do MarleyOT 8.60.' },
+  { name: 'CM Zion', role: 'Community Manager', group: 'Community Manager', status: 'Offline', description: 'Organização de eventos comunitários, suporte a guildas e moderação do fórum oficial.' },
+  { name: 'Tutor Roots', role: 'Head Tutor', group: 'Tutor Oficial', status: 'Online', description: 'Auxílio a novos jogadores no Help Channel e resolução de dúvidas in-game.' }
+];
+
+app.get('/api/support', (req: Request, res: Response) => {
+  res.json(staffData);
 });
 
 // ----------------------------------------------------

@@ -18,6 +18,7 @@ import { ChangelogView } from './components/ChangelogView';
 import { HelpdeskView } from './components/HelpdeskView';
 import { ShopView } from './components/ShopView';
 import { DatabaseDiagnosticView } from './components/DatabaseDiagnosticView';
+import { ZnotePhpExplorerView } from './components/ZnotePhpExplorerView';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -408,6 +409,62 @@ export default function App() {
           {currentPage === 'server_info' && <ServerInfoView stats={serverStats} />}
           {currentPage === 'downloads' && (
             <DownloadsView clientDownloadUrl={settings.clientDownloadUrl} />
+          )}
+          {currentPage === 'admin_settings' && (
+            <AdminView
+              session={activeSession}
+              settings={settings}
+              characters={characters}
+              onSaveSettings={handleSaveSettings}
+              onNavigate={setCurrentPage}
+            />
+          )}
+          {currentPage === 'znote_php' && (
+            <ZnotePhpExplorerView
+              initialFile="config.php"
+              onNavigate={setCurrentPage}
+              isGM={isGM}
+            />
+          )}
+          {currentPage === 'spells' && (
+            <ZnotePhpExplorerView
+              initialFile="spells.php"
+              initialTab="interactive"
+              onNavigate={setCurrentPage}
+              isGM={isGM}
+            />
+          )}
+          {currentPage === 'onlinelist' && (
+            <ZnotePhpExplorerView
+              initialFile="onlinelist.php"
+              initialTab="interactive"
+              onNavigate={setCurrentPage}
+              isGM={isGM}
+            />
+          )}
+          {currentPage === 'killers' && (
+            <ZnotePhpExplorerView
+              initialFile="killers.php"
+              initialTab="interactive"
+              onNavigate={setCurrentPage}
+              isGM={isGM}
+            />
+          )}
+          {currentPage === 'monster_loot' && (
+            <ZnotePhpExplorerView
+              initialFile="monster_loot.php"
+              initialTab="interactive"
+              onNavigate={setCurrentPage}
+              isGM={isGM}
+            />
+          )}
+          {currentPage === 'support' && (
+            <ZnotePhpExplorerView
+              initialFile="support.php"
+              initialTab="interactive"
+              onNavigate={setCurrentPage}
+              isGM={isGM}
+            />
           )}
           {currentPage === 'deploy_guide' && <DeployGuideView />}
         </main>

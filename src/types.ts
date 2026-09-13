@@ -16,8 +16,15 @@ export type PageId =
   | 'downloads' 
   | 'deploy_guide'
   | 'admin_panel'
+  | 'admin_settings'
   | 'db_diagnostic'
-  | 'database_debug';
+  | 'database_debug'
+  | 'spells'
+  | 'onlinelist'
+  | 'killers'
+  | 'monster_loot'
+  | 'support'
+  | 'znote_php';
 
 export interface PortalSettings {
   clientDownloadUrl: string;

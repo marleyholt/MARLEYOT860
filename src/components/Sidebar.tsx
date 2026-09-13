@@ -20,7 +20,12 @@ import {
   ShoppingCart,
   LifeBuoy,
   FileText,
-  Database
+  Database,
+  Settings,
+  BookOpen,
+  FileCode,
+  Flame,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -51,25 +56,67 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-1.5">
               <Crown className="w-4 h-4 text-[#facc15]" />
               <span className="text-[11px] font-black uppercase tracking-wider text-[#facc15] font-serif">
-                Painel do GM (GOD)
+                Painel do GM & Staff (GOD)
               </span>
             </div>
             <span className="px-1.5 py-0.5 rounded bg-[#dc2626] text-white text-[9px] font-black tracking-widest uppercase animate-pulse">
               STAFF ATIVO
             </span>
           </div>
-          <button
-            id="nav-btn-admin-panel"
-            onClick={() => onNavigate('admin_panel')}
-            className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2.5 transition-all text-xs font-bold ${
-              currentPage === 'admin_panel'
-                ? 'bg-gradient-to-r from-[#eab308] to-[#facc15] text-neutral-950 shadow-md border border-[#fef08a]'
-                : 'bg-[#292209] hover:bg-[#3d330c] text-[#facc15] border border-[#eab308]/50'
-            }`}
-          >
-            <Shield className="w-4 h-4 text-[#dc2626]" />
-            Gerenciar Servidor & Client
-          </button>
+
+          <div className="space-y-1 pt-1">
+            <button
+              id="nav-btn-admin-settings"
+              onClick={() => onNavigate('admin_settings')}
+              className={`w-full text-left px-2.5 py-1.5 rounded-md flex items-center gap-2 transition-all text-xs font-bold ${
+                currentPage === 'admin_settings'
+                  ? 'bg-gradient-to-r from-[#eab308] to-[#facc15] text-neutral-950 shadow-md border border-[#fef08a]'
+                  : 'bg-[#292209] hover:bg-[#3d330c] text-[#facc15] border border-[#eab308]/50'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5 text-[#eab308]" />
+              Configurações do Servidor
+            </button>
+
+            <button
+              id="nav-btn-admin-panel"
+              onClick={() => onNavigate('admin_panel')}
+              className={`w-full text-left px-2.5 py-1.5 rounded-md flex items-center gap-2 transition-all text-xs font-bold ${
+                currentPage === 'admin_panel'
+                  ? 'bg-gradient-to-r from-[#eab308] to-[#facc15] text-neutral-950 shadow-md border border-[#fef08a]'
+                  : 'bg-[#1b2b1d] hover:bg-[#253b28] text-neutral-200 border border-[#2b442f]'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 text-[#22c55e]" />
+              Gerenciar Servidor & Contas
+            </button>
+
+            <button
+              id="nav-btn-admin-db"
+              onClick={() => onNavigate('db_diagnostic')}
+              className={`w-full text-left px-2.5 py-1.5 rounded-md flex items-center gap-2 transition-all text-xs font-bold ${
+                currentPage === 'db_diagnostic'
+                  ? 'bg-gradient-to-r from-[#eab308] to-[#facc15] text-neutral-950 shadow-md border border-[#fef08a]'
+                  : 'bg-[#1b2b1d] hover:bg-[#253b28] text-neutral-200 border border-[#2b442f]'
+              }`}
+            >
+              <Database className="w-3.5 h-3.5 text-emerald-400" />
+              Banco de Dados MariaDB
+            </button>
+
+            <button
+              id="nav-btn-admin-znote"
+              onClick={() => onNavigate('znote_php')}
+              className={`w-full text-left px-2.5 py-1.5 rounded-md flex items-center gap-2 transition-all text-xs font-bold ${
+                currentPage === 'znote_php'
+                  ? 'bg-gradient-to-r from-[#eab308] to-[#facc15] text-neutral-950 shadow-md border border-[#fef08a]'
+                  : 'bg-[#1b2b1d] hover:bg-[#253b28] text-[#facc15] border border-[#2b442f]'
+              }`}
+            >
+              <FileCode className="w-3.5 h-3.5 text-[#facc15]" />
+              Arquivos .PHP do ZnoteAAC
+            </button>
+          </div>
         </div>
       )}
 
@@ -212,6 +259,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
 
             <button
+              id="nav-btn-onlinelist"
+              onClick={() => onNavigate('onlinelist')}
+              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                currentPage === 'onlinelist'
+                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-emerald-400'
+                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              Jogadores Online (onlinelist.php)
+            </button>
+
+            <button
+              id="nav-btn-spells"
+              onClick={() => onNavigate('spells')}
+              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                currentPage === 'spells'
+                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-amber-400'
+                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              Magias & Spells (spells.php)
+            </button>
+
+            <button
+              id="nav-btn-killers"
+              onClick={() => onNavigate('killers')}
+              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                currentPage === 'killers'
+                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-rose-500'
+                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+              }`}
+            >
+              <Skull className="w-3.5 h-3.5 text-rose-400" />
+              Top Fraggers (killers.php)
+            </button>
+
+            <button
+              id="nav-btn-monsters"
+              onClick={() => onNavigate('monster_loot')}
+              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                currentPage === 'monster_loot'
+                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-orange-400'
+                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              Monstros & Loot (monster_loot.php)
+            </button>
+
+            <button
               id="nav-btn-deaths"
               onClick={() => onNavigate('deaths')}
               className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
@@ -220,7 +319,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
               }`}
             >
-              <Skull className="w-3.5 h-3.5 text-rose-400" />
+              <Skull className="w-3.5 h-3.5 text-neutral-400" />
               Últimas Mortes (Deaths)
             </button>
 
@@ -261,6 +360,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <UserSearch className="w-3.5 h-3.5 text-sky-400" />
               Buscar Personagem
+            </button>
+
+            <button
+              id="nav-btn-support-staff"
+              onClick={() => onNavigate('support')}
+              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                currentPage === 'support'
+                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-emerald-400'
+                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              Equipe do Servidor (support.php)
+            </button>
+
+            <button
+              id="nav-btn-znote-all"
+              onClick={() => onNavigate('znote_php')}
+              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                currentPage === 'znote_php'
+                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-[#facc15]'
+                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+              }`}
+            >
+              <FileCode className="w-3.5 h-3.5 text-[#facc15]" />
+              Todos os Arquivos .PHP (Znote)
             </button>
           </nav>
         </div>
@@ -315,67 +440,83 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* CATEGORIA 4: BANCO DE DADOS & DEPLOY */}
-        <div>
-          <div className="bg-gradient-to-r from-[#182e1c] to-[#121612] px-3.5 py-1.5 border-b border-[#2b3d2b]">
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#facc15] font-serif flex items-center gap-1.5">
-              <Cpu className="w-3 h-3 text-[#22c55e]" />
-              Banco & Administração
-            </span>
-          </div>
-          <div className="p-1.5 space-y-0.5 text-xs">
-            <button
-              id="nav-btn-db-diagnostic"
-              onClick={() => onNavigate('db_diagnostic')}
-              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
-                currentPage === 'db_diagnostic'
-                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-emerald-500'
-                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              Diagnóstico & SQL MariaDB
-            </button>
+        {/* CATEGORIA 4: BANCO DE DADOS & ADMINISTRAÇÃO (ESTRITAMENTE EXCLUSIVO PARA GM/GOD) */}
+        {isGM && (
+          <div>
+            <div className="bg-gradient-to-r from-[#291f09] to-[#121612] px-3.5 py-1.5 border-b border-[#eab308]/40">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#facc15] font-serif flex items-center gap-1.5">
+                <Crown className="w-3 h-3 text-[#facc15]" />
+                Banco & Administração (Staff Only)
+              </span>
+            </div>
+            <div className="p-1.5 space-y-0.5 text-xs">
+              <button
+                id="nav-btn-settings-sub"
+                onClick={() => onNavigate('admin_settings')}
+                className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                  currentPage === 'admin_settings'
+                    ? 'bg-[#eab308] text-neutral-950 font-black border-l-4 border-white'
+                    : 'text-[#facc15] hover:bg-[#292209] font-bold'
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5 text-[#facc15]" />
+                Configurações do Servidor
+              </button>
 
-            <button
-              id="nav-btn-deploy"
-              onClick={() => onNavigate('deploy_guide')}
-              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
-                currentPage === 'deploy_guide'
-                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-[#facc15]'
-                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
-              }`}
-            >
-              <Server className="w-3.5 h-3.5 text-[#e11d48]" />
-              Deploy & Sincronização VPS
-            </button>
-
-            {isGM && (
               <button
                 id="nav-btn-admin-sub"
                 onClick={() => onNavigate('admin_panel')}
                 className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
                   currentPage === 'admin_panel'
                     ? 'bg-[#eab308] text-neutral-950 font-black border-l-4 border-white'
-                    : 'text-[#facc15] hover:bg-[#292209] font-bold'
+                    : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
                 }`}
               >
-                <Crown className="w-3.5 h-3.5 text-[#facc15]" />
-                Painel do GM / Servidor
+                <Shield className="w-3.5 h-3.5 text-[#22c55e]" />
+                Painel do GM / Gestão de Contas
               </button>
-            )}
 
-            {isLoggedIn && (
               <button
-                id="nav-btn-logout"
-                onClick={onLogout}
-                className="w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 text-rose-400 hover:bg-rose-950/40 hover:text-rose-200 transition-colors pt-1"
+                id="nav-btn-db-diagnostic"
+                onClick={() => onNavigate('db_diagnostic')}
+                className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                  currentPage === 'db_diagnostic'
+                    ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-emerald-500'
+                    : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+                }`}
               >
-                Desconectar da Conta
+                <Database className="w-3.5 h-3.5 text-emerald-400" />
+                Diagnóstico & SQL MariaDB
               </button>
-            )}
+
+              <button
+                id="nav-btn-deploy"
+                onClick={() => onNavigate('deploy_guide')}
+                className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                  currentPage === 'deploy_guide'
+                    ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-[#facc15]'
+                    : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+                }`}
+              >
+                <Server className="w-3.5 h-3.5 text-[#e11d48]" />
+                Deploy & Sincronização VPS
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Desconectar sessão se estiver logado */}
+        {isLoggedIn && (
+          <div className="p-1.5">
+            <button
+              id="nav-btn-logout"
+              onClick={onLogout}
+              className="w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 text-rose-400 hover:bg-rose-950/40 hover:text-rose-200 transition-colors text-xs font-semibold"
+            >
+              Desconectar da Conta
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Jamaica Roots Badge */}
