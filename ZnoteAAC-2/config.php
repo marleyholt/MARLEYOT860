@@ -23,7 +23,7 @@
 	$config['site_url'] = "http://marleyot.duckdns.org";
 
 	// Path to server folder without "\" (or "/") at the end, ex: C:\Users\Username\Documents\GitHub\forgottenserver
-	$config['server_path'] = '/home/ubuntu/otserv';
+	$config['server_path'] = '/home/ubuntu/marleyot86/styller-master';
 
 	// ------------------------ \\
 	// MYSQL CONNECTION DETAILS \\

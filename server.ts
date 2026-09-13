@@ -196,7 +196,7 @@ app.get('/api/status', async (req: Request, res: Response) => {
     let totalAccounts = 0;
 
     if (db) {
-      const [onlineRows]: any = await db.query('SELECT COUNT(*) as count FROM `players_online`;').catch(() => [[{ count: 0 }]]);
+      const [onlineRows]: any = await db.query('SELECT COUNT(*) as count FROM `players` WHERE `online` > 0;').catch(() => [[{ count: 0 }]]);
       if (onlineRows && onlineRows[0]) {
         onlineCount = Number(onlineRows[0].count);
       }
@@ -749,13 +749,7 @@ app.get('/api/deaths', async (req: Request, res: Response) => {
     const db = await getPool();
     if (!db) {
       // Fallback mock deaths
-      return res.json([
-        { id: 1, victim: 'Player Teste', level: 45, time: 'Hoje às 14:32', killer: 'Dragon Lord', isPlayer: false },
-        { id: 2, victim: 'Sorcerer Rasta', level: 68, time: 'Hoje às 13:10', killer: 'Marley Sorcerer', isPlayer: true },
-        { id: 3, victim: 'Knight Jah', level: 32, time: 'Ontem às 22:15', killer: 'Giant Spider', isPlayer: false },
-        { id: 4, victim: 'Druid Roots', level: 54, time: 'Ontem às 19:40', killer: 'Demon', isPlayer: false },
-        { id: 5, victim: 'Paladin Zion', level: 80, time: 'Ontem às 18:05', killer: 'GM Marley', isPlayer: true },
-      ]);
+      return res.json([]);
     }
 
     // Try query player_deaths
@@ -814,13 +808,7 @@ app.get('/api/houses', async (req: Request, res: Response) => {
   try {
     const db = await getPool();
     if (!db) {
-      return res.json([
-        { id: 1, name: 'Styller Central House #1', townId: 1, townName: 'Styller City (Principal)', rent: 15000, size: 45, beds: 2, ownerName: 'Marley Sorcerer', isRented: true },
-        { id: 2, name: 'Styller Depot Villa #2', townId: 1, townName: 'Styller City (Principal)', rent: 25000, size: 85, beds: 4, ownerName: null, isRented: false },
-        { id: 3, name: 'Temple Street Flat #3', townId: 1, townName: 'Styller City (Principal)', rent: 8000, size: 28, beds: 1, ownerName: 'Player Teste', isRented: true },
-        { id: 4, name: 'Seaside Manor #4', townId: 1, townName: 'Styller City (Principal)', rent: 35000, size: 120, beds: 6, ownerName: null, isRented: false },
-        { id: 5, name: 'Market Corner Flat #5', townId: 1, townName: 'Styller City (Principal)', rent: 12000, size: 36, beds: 2, ownerName: null, isRented: false },
-      ]);
+      return res.json([]);
     }
 
     const [rows]: any = await db.query(`
@@ -862,11 +850,7 @@ app.get('/api/guilds', async (req: Request, res: Response) => {
   try {
     const db = await getPool();
     if (!db) {
-      return res.json([
-        { id: 1, name: 'Roots & Culture', leaderName: 'Marley Sorcerer', memberCount: 14, motd: 'Paz, Respeito e Guerras Honradas no MarleyOT!', creationDate: '10/09/2026' },
-        { id: 2, name: 'Zion Warriors', leaderName: 'Player Teste', memberCount: 8, motd: 'Dominando as hunts e raids de Styller.', creationDate: '11/09/2026' },
-        { id: 3, name: 'Old School 86', leaderName: 'Knight Jah', memberCount: 5, motd: 'Clássico 8.60 para os verdadeiros veteranos.', creationDate: '12/09/2026' },
-      ]);
+      return res.json([]);
     }
 
     const [rows]: any = await db.query(`
@@ -928,9 +912,7 @@ app.get('/api/character/:name', async (req: Request, res: Response) => {
     }
 
     const [charRows]: any = await db.query(
-      `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, IF(po.player_id IS NOT NULL, 1, 0) as online, p.town_id, p.balance, p.lastlogin, p.group_id 
-       FROM players p 
-       LEFT JOIN players_online po ON po.player_id = p.id
+      `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, p.online
        WHERE p.name = ? LIMIT 1;`,
       [charName]
     );
@@ -1493,8 +1475,7 @@ app.get('/api/onlinelist', async (req: Request, res: Response) => {
     if (db) {
       const [rows]: any = await db.query(
         `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, g.name AS guildName 
-         FROM players_online po
-         INNER JOIN players p ON p.id = po.player_id
+         FROM players p WHERE p.online > 0
          LEFT JOIN guild_membership gm ON gm.player_id = p.id
          LEFT JOIN guilds g ON gm.guild_id = g.id
          ORDER BY p.level DESC;`
@@ -1515,15 +1496,9 @@ app.get('/api/onlinelist', async (req: Request, res: Response) => {
     }
 
     // Default online list
-    res.json([
-      { id: 1, name: 'GM Marley', level: 8, vocation: 'GOD', guildName: 'Staff MarleyOT' },
-      { id: 2, name: 'Marley Sorcerer', level: 8, vocation: 'Sorcerer', guildName: 'Roots & Culture' }
-    ]);
+    res.json([]);
   } catch (err: any) {
-    res.json([
-      { id: 1, name: 'GM Marley', level: 8, vocation: 'GOD', guildName: 'Staff MarleyOT' },
-      { id: 2, name: 'Marley Sorcerer', level: 8, vocation: 'Sorcerer', guildName: 'Roots & Culture' }
-    ]);
+    res.json([]);
   }
 });
 
@@ -1546,17 +1521,9 @@ app.get('/api/killers', async (req: Request, res: Response) => {
       }
     }
 
-    res.json([
-      { name: 'Marley Sorcerer', frags: 14, vocation: 'Master Sorcerer', level: 150 },
-      { name: 'GM Marley', frags: 8, vocation: 'GOD', level: 8 },
-      { name: 'Zion Paladin', frags: 5, vocation: 'Royal Paladin', level: 120 },
-      { name: 'Rasta Knight', frags: 3, vocation: 'Elite Knight', level: 105 }
-    ]);
+    res.json([]);
   } catch {
-    res.json([
-      { name: 'Marley Sorcerer', frags: 14, vocation: 'Master Sorcerer', level: 150 },
-      { name: 'GM Marley', frags: 8, vocation: 'GOD', level: 8 }
-    ]);
+    res.json([]);
   }
 });
 
