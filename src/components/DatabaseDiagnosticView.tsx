@@ -197,7 +197,7 @@ export const DatabaseDiagnosticView: React.FC = () => {
 
           <div className="p-3 bg-[#0d120e] border border-[#1e291e] rounded">
             <span className="text-neutral-500 block text-[10px] uppercase font-bold">Nome do Banco (Schema)</span>
-            <span className="font-mono text-emerald-400 font-bold">marleyot86</span>
+            <span className="font-mono text-emerald-400 font-bold">{diag?.database || 'yurots_db'}</span>
           </div>
         </div>
 
@@ -209,10 +209,10 @@ export const DatabaseDiagnosticView: React.FC = () => {
 
           <div className="p-3 bg-[#0a0e0b] border border-[#253526] rounded-lg font-mono text-xs text-neutral-300 flex items-center justify-between gap-3">
             <span className="truncate">
-              mariadb -u root -p'MARLEY22@@##' marleyot86
+              mariadb -u root -p'MARLEY22@@##' {diag?.database || 'yurots_db'}
             </span>
             <button
-              onClick={() => copyToClipboard("mariadb -u root -p'MARLEY22@@##' marleyot86", 'cli-login')}
+              onClick={() => copyToClipboard(`mariadb -u root -p'MARLEY22@@##' ${diag?.database || 'yurots_db'}`, 'cli-login')}
               className="px-2.5 py-1 bg-[#1b4324] hover:bg-[#255e32] text-[#facc15] rounded text-[10px] font-bold flex items-center gap-1 shrink-0"
             >
               {copiedCmd === 'cli-login' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}

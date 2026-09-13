@@ -19,6 +19,11 @@ import { HelpdeskView } from './components/HelpdeskView';
 import { ShopView } from './components/ShopView';
 import { DatabaseDiagnosticView } from './components/DatabaseDiagnosticView';
 import { ZnotePhpExplorerView } from './components/ZnotePhpExplorerView';
+import { OnlineListView } from './components/OnlineListView';
+import { SpellsView } from './components/SpellsView';
+import { KillersView } from './components/KillersView';
+import { MonsterLootView } from './components/MonsterLootView';
+import { SupportStaffView } from './components/SupportStaffView';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -427,43 +432,36 @@ export default function App() {
             />
           )}
           {currentPage === 'spells' && (
-            <ZnotePhpExplorerView
-              initialFile="spells.php"
-              initialTab="interactive"
+            <SpellsView
               onNavigate={setCurrentPage}
-              isGM={isGM}
             />
           )}
           {currentPage === 'onlinelist' && (
-            <ZnotePhpExplorerView
-              initialFile="onlinelist.php"
-              initialTab="interactive"
+            <OnlineListView
               onNavigate={setCurrentPage}
-              isGM={isGM}
+              onInspectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
             />
           )}
           {currentPage === 'killers' && (
-            <ZnotePhpExplorerView
-              initialFile="killers.php"
-              initialTab="interactive"
+            <KillersView
               onNavigate={setCurrentPage}
-              isGM={isGM}
+              onInspectCharacter={(name) => {
+                setInspectedCharacter(name);
+                setCurrentPage('character_profile');
+              }}
             />
           )}
           {currentPage === 'monster_loot' && (
-            <ZnotePhpExplorerView
-              initialFile="monster_loot.php"
-              initialTab="interactive"
+            <MonsterLootView
               onNavigate={setCurrentPage}
-              isGM={isGM}
             />
           )}
           {currentPage === 'support' && (
-            <ZnotePhpExplorerView
-              initialFile="support.php"
-              initialTab="interactive"
+            <SupportStaffView
               onNavigate={setCurrentPage}
-              isGM={isGM}
             />
           )}
           {currentPage === 'deploy_guide' && <DeployGuideView />}

@@ -268,7 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <Users className="w-3.5 h-3.5 text-emerald-400" />
-              Jogadores Online (onlinelist.php)
+              Jogadores Online
             </button>
 
             <button
@@ -281,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-              Magias & Spells (spells.php)
+              Grimório de Magias
             </button>
 
             <button
@@ -294,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <Skull className="w-3.5 h-3.5 text-rose-400" />
-              Top Fraggers (killers.php)
+              Top Fraggers (PvP)
             </button>
 
             <button
@@ -307,7 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <Flame className="w-3.5 h-3.5 text-orange-400" />
-              Monstros & Loot (monster_loot.php)
+              Monstros & Loot
             </button>
 
             <button
@@ -372,20 +372,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Equipe do Servidor (support.php)
-            </button>
-
-            <button
-              id="nav-btn-znote-all"
-              onClick={() => onNavigate('znote_php')}
-              className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
-                currentPage === 'znote_php'
-                  ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-[#facc15]'
-                  : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
-              }`}
-            >
-              <FileCode className="w-3.5 h-3.5 text-[#facc15]" />
-              Todos os Arquivos .PHP (Znote)
+              Equipe do Servidor
             </button>
           </nav>
         </div>
@@ -500,6 +487,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <Server className="w-3.5 h-3.5 text-[#e11d48]" />
                 Deploy & Sincronização VPS
+              </button>
+
+              <button
+                id="nav-btn-znote-staff"
+                onClick={() => onNavigate('znote_php')}
+                className={`w-full text-left px-2.5 py-1.5 rounded flex items-center gap-2 transition-colors ${
+                  currentPage === 'znote_php'
+                    ? 'bg-[#1b4324] text-[#facc15] font-bold border-l-4 border-[#facc15]'
+                    : 'text-neutral-300 hover:bg-[#182319] hover:text-[#facc15]'
+                }`}
+              >
+                <FileCode className="w-3.5 h-3.5 text-[#facc15]" />
+                Arquivos PHP (ZnoteAAC)
               </button>
             </div>
           </div>

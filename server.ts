@@ -38,9 +38,9 @@ function getSettings(): PortalSettingsData {
     heroBannerUrl: '',
     dbHost: '127.0.0.1',
     dbPort: 3306,
-    dbUser: 'marleyot',
-    dbPassword: '',
-    dbDatabase: 'marleyot86',
+    dbUser: 'root',
+    dbPassword: 'MARLEY22@@##',
+    dbDatabase: 'yurots_db',
   };
 
   try {
@@ -79,19 +79,20 @@ function getEffectiveDbConfig(): DbConfig {
   return {
     host: process.env.MYSQL_HOST || settings.dbHost || '127.0.0.1',
     port: Number(process.env.MYSQL_PORT) || settings.dbPort || 3306,
-    user: process.env.MYSQL_USER || settings.dbUser || 'marleyot',
+    user: process.env.MYSQL_USER || settings.dbUser || 'root',
     password: process.env.MYSQL_PASSWORD !== undefined 
       ? process.env.MYSQL_PASSWORD 
-      : (settings.dbPassword !== undefined ? settings.dbPassword : ''),
-    database: process.env.MYSQL_DATABASE || settings.dbDatabase || 'marleyot86',
+      : (settings.dbPassword !== undefined && settings.dbPassword !== '' ? settings.dbPassword : 'MARLEY22@@##'),
+    database: process.env.MYSQL_DATABASE || settings.dbDatabase || 'yurots_db',
   };
 }
 
 let pool: Pool | null = null;
 let dbConnected = false;
 let dbLastHost = '';
+let dbLastDatabase = 'yurots_db';
 let dbLastError = '';
-let dbCurrentUser = 'marleyot';
+let dbCurrentUser = 'root';
 
 async function getPool(): Promise<Pool | null> {
   if (pool && dbConnected) return pool;
@@ -108,16 +109,18 @@ async function getPool(): Promise<Pool | null> {
     if (!candidateHosts.includes('137.131.196.66')) candidateHosts.push('137.131.196.66');
   }
 
+  // Databases to attempt
+  const candidateDatabases: string[] = [];
+  if (currentCfg.database) candidateDatabases.push(currentCfg.database);
+  if (!candidateDatabases.includes('yurots_db')) candidateDatabases.push('yurots_db');
+  if (!candidateDatabases.includes('marleyot86')) candidateDatabases.push('marleyot86');
+
   // Candidate credentials:
-  // 1. Configured user (marleyot) with configured password ('' by default)
-  // 2. Configured user (marleyot) with 'MARLEY22@@##'
-  // 3. User 'root' with 'MARLEY22@@##'
-  // 4. User 'root' with ''
   const candidateCredentials: Array<{ user: string; password: string }> = [
     { user: currentCfg.user, password: currentCfg.password },
-    { user: 'marleyot', password: '' },
-    { user: 'marleyot', password: 'MARLEY22@@##' },
     { user: 'root', password: 'MARLEY22@@##' },
+    { user: 'marleyot', password: 'MARLEY22@@##' },
+    { user: 'marleyot', password: '' },
     { user: 'root', password: '' }
   ];
 
@@ -130,34 +133,37 @@ async function getPool(): Promise<Pool | null> {
   }
 
   for (const host of candidateHosts) {
-    for (const cred of uniqueCredentials) {
-      try {
-        const candidatePool = mysql.createPool({
-          host,
-          port: currentCfg.port,
-          user: cred.user,
-          password: cred.password,
-          database: currentCfg.database,
-          waitForConnections: true,
-          connectionLimit: 10,
-          queueLimit: 0,
-          connectTimeout: 2500,
-        });
+    for (const dbName of candidateDatabases) {
+      for (const cred of uniqueCredentials) {
+        try {
+          const candidatePool = mysql.createPool({
+            host,
+            port: currentCfg.port,
+            user: cred.user,
+            password: cred.password,
+            database: dbName,
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0,
+            connectTimeout: host === '127.0.0.1' ? 800 : 3500,
+          });
 
-        const conn = await candidatePool.getConnection();
-        await conn.ping();
-        conn.release();
+          const conn = await candidatePool.getConnection();
+          await conn.ping();
+          conn.release();
 
-        pool = candidatePool;
-        dbConnected = true;
-        dbLastHost = host;
-        dbCurrentUser = cred.user;
-        dbLastError = '';
-        console.log(`[DB] Successfully connected to MariaDB (${currentCfg.database}) at ${host}:${currentCfg.port} as user '${cred.user}'`);
-        return pool;
-      } catch (err: any) {
-        dbLastError = `[${cred.user}@${host}]: ${err.message}`;
-        // Continue to next candidate
+          pool = candidatePool;
+          dbConnected = true;
+          dbLastHost = host;
+          dbLastDatabase = dbName;
+          dbCurrentUser = cred.user;
+          dbLastError = '';
+          console.log(`[DB] Successfully connected to MariaDB (${dbName}) at ${host}:${currentCfg.port} as user '${cred.user}'`);
+          return pool;
+        } catch (err: any) {
+          dbLastError = `[${cred.user}@${host}/${dbName}]: ${err.message}`;
+          // Continue to next candidate
+        }
       }
     }
   }
@@ -1165,10 +1171,10 @@ app.get('/api/admin/db-diagnostic', async (req: Request, res: Response) => {
 
     res.json({
       connected: true,
-      host: dbConfig.host,
+      host: dbLastHost || dbConfig.host,
       port: dbConfig.port,
-      database: dbConfig.database,
-      user: dbConfig.user,
+      database: dbLastDatabase || dbConfig.database,
+      user: dbCurrentUser || dbConfig.user,
       latencyMs: latency,
       serverVersion: ver[0]?.v || 'MariaDB 10.x',
       tables: tablesReport
@@ -1176,10 +1182,10 @@ app.get('/api/admin/db-diagnostic', async (req: Request, res: Response) => {
   } catch (err: any) {
     res.json({
       connected: false,
-      host: dbConfig.host,
+      host: dbLastHost || dbConfig.host,
       port: dbConfig.port,
-      database: dbConfig.database,
-      user: dbConfig.user,
+      database: dbLastDatabase || dbConfig.database,
+      user: dbCurrentUser || dbConfig.user,
       latencyMs: Date.now() - startTime,
       tables: [],
       errorDetails: `Erro ${err.code || 'DB_ERR'}: ${err.message} (SQLState: ${err.sqlState || 'N/A'})`
