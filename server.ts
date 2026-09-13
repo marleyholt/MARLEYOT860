@@ -191,20 +191,20 @@ app.get('/api/health', (req: Request, res: Response) => {
 app.get('/api/status', async (req: Request, res: Response) => {
   try {
     const db = await getPool();
-    let onlineCount = 1;
-    let totalPlayers = 3;
-    let totalAccounts = 2;
+    let onlineCount = 0;
+    let totalPlayers = 0;
+    let totalAccounts = 0;
 
     if (db) {
-      const [onlineRows]: any = await db.query('SELECT COUNT(*) as count FROM `players` WHERE `online` > 0;');
+      const [onlineRows]: any = await db.query('SELECT COUNT(*) as count FROM `players_online`;').catch(() => [[{ count: 0 }]]);
       if (onlineRows && onlineRows[0]) {
-        onlineCount = Math.max(Number(onlineRows[0].count), 1);
+        onlineCount = Number(onlineRows[0].count);
       }
-      const [playerRows]: any = await db.query('SELECT COUNT(*) as count FROM `players`;');
+      const [playerRows]: any = await db.query('SELECT COUNT(*) as count FROM `players`;').catch(() => [[{ count: 0 }]]);
       if (playerRows && playerRows[0]) {
         totalPlayers = Number(playerRows[0].count);
       }
-      const [accRows]: any = await db.query('SELECT COUNT(*) as count FROM `accounts`;');
+      const [accRows]: any = await db.query('SELECT COUNT(*) as count FROM `accounts`;').catch(() => [[{ count: 0 }]]);
       if (accRows && accRows[0]) {
         totalAccounts = Number(accRows[0].count);
       }
@@ -267,7 +267,12 @@ app.get('/api/highscores', async (req: Request, res: Response) => {
     }
 
     const [rows]: any = await db.query(
-      'SELECT `id`, `name`, `level`, `vocation`, `maglevel`, `experience`, `online` FROM `players` WHERE `group_id` < 3 ORDER BY `level` DESC, `experience` DESC LIMIT 50;'
+      `SELECT p.\`id\`, p.\`name\`, p.\`level\`, p.\`vocation\`, p.\`maglevel\`, p.\`experience\`, IF(po.\`player_id\` IS NOT NULL, 1, 0) as \`online\`
+       FROM \`players\` p
+       LEFT JOIN \`players_online\` po ON po.\`player_id\` = p.\`id\`
+       WHERE p.\`group_id\` < 3
+       ORDER BY p.\`level\` DESC, p.\`experience\` DESC
+       LIMIT 50;`
     );
 
     const vocNames: Record<number, string> = {
@@ -348,7 +353,10 @@ app.post('/api/accounts/login', async (req: Request, res: Response) => {
 
     const acc = accRows[0];
     const [charRows]: any = await db.query(
-      'SELECT `id`, `name`, `level`, `vocation`, `maglevel`, `experience`, `online`, `town_id`, `balance`, `lastlogin` FROM `players` WHERE `account_id` = ?;',
+      `SELECT p.\`id\`, p.\`name\`, p.\`level\`, p.\`vocation\`, p.\`maglevel\`, p.\`experience\`, IF(po.\`player_id\` IS NOT NULL, 1, 0) as \`online\`, p.\`town_id\`, p.\`balance\`, p.\`lastlogin\`
+       FROM \`players\` p
+       LEFT JOIN \`players_online\` po ON po.\`player_id\` = p.\`id\`
+       WHERE p.\`account_id\` = ?;`,
       [acc.id]
     );
 
@@ -365,14 +373,17 @@ app.post('/api/accounts/login', async (req: Request, res: Response) => {
       groupName: acc.type >= 4 ? 'GOD' : 'Player'
     }));
 
+    const session = {
+      accountName: acc.name,
+      type: acc.type,
+      premiumDays: acc.premdays,
+      characters: formattedChars,
+    };
+
     res.json({
       success: true,
-      account: {
-        accountName: acc.name,
-        type: acc.type,
-        premiumDays: acc.premdays,
-        characters: formattedChars,
-      }
+      session,
+      account: session,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -434,25 +445,32 @@ app.post('/api/accounts/register', async (req: Request, res: Response) => {
     const sha1Pass = crypto.createHash('sha1').update(cleanPass).digest('hex');
     const accEmail = email ? String(email).trim() : `${cleanAcc}@marleyot.duckdns.org`;
 
-    // 4. Inserir na tabela `accounts`
-    const [accInsert]: any = await db.query(
-      'INSERT INTO `accounts` (`name`, `password`, `email`, `premdays`, `type`) VALUES (?, ?, ?, 30, 1);',
-      [cleanAcc, sha1Pass, accEmail]
+    // 4. Calcular ID numérico seguro para a tabela accounts (sem auto_increment)
+    let accountId: number;
+    if (/^[0-9]+$/.test(cleanAcc)) {
+      accountId = parseInt(cleanAcc, 10);
+    } else {
+      const [maxRow]: any = await db.query('SELECT COALESCE(MAX(id), 1000000) as maxId FROM `accounts` WHERE `id` < 2000000000;');
+      accountId = Number(maxRow[0]?.maxId || 1000000) + 1;
+    }
+
+    // 5. Inserir na tabela `accounts`
+    await db.query(
+      'INSERT INTO `accounts` (`id`, `name`, `password`, `email`, `premdays`, `type`) VALUES (?, ?, ?, ?, 30, 1);',
+      [accountId, cleanAcc, sha1Pass, accEmail]
     );
 
-    const accountId = accInsert.insertId;
-
-    // 5. Inserir na tabela `players`
+    // 6. Inserir na tabela `players` (sem lookaddons que não existe no schema TFS 7.72)
     const looktype = sexId === 0 ? 136 : 128; // Citizen Outfit (Female: 136, Male: 128)
     const [charInsert]: any = await db.query(
       `INSERT INTO \`players\` (
         \`name\`, \`group_id\`, \`account_id\`, \`level\`, \`vocation\`, \`health\`, \`healthmax\`, \`experience\`,
-        \`lookbody\`, \`lookfeet\`, \`lookhead\`, \`looklegs\`, \`looktype\`, \`lookaddons\`, \`maglevel\`,
+        \`lookbody\`, \`lookfeet\`, \`lookhead\`, \`looklegs\`, \`looktype\`, \`maglevel\`,
         \`mana\`, \`manamax\`, \`manaspent\`, \`soul\`, \`town_id\`, \`posx\`, \`posy\`, \`posz\`, \`conditions\`,
         \`cap\`, \`sex\`, \`lastlogin\`, \`lastip\`, \`save\`, \`skull\`, \`skulltime\`, \`balance\`
       ) VALUES (
         ?, 1, ?, 8, ?, 185, 185, 4200,
-        68, 76, 78, 58, ?, 0, 0,
+        68, 76, 78, 58, ?, 0,
         35, 35, 0, 100, 1, 160, 54, 7, '',
         470, ?, 0, 0, 1, 0, 0, 0
       );`,
@@ -461,14 +479,18 @@ app.post('/api/accounts/register', async (req: Request, res: Response) => {
 
     const charId = charInsert.insertId;
 
-    // 6. Tentar vincular com znote_accounts se tabela existir
+    // 7. Sincronizar com znote_accounts e znote_players
     try {
       await db.query(
         'INSERT IGNORE INTO `znote_accounts` (`account_id`, `ip`, `created`, `points`, `active`, `flag`) VALUES (?, 0, UNIX_TIMESTAMP(), 0, 1, "br");',
         [accountId]
       );
+      await db.query(
+        'INSERT IGNORE INTO `znote_players` (`player_id`, `created`, `hide_char`, `comment`) VALUES (?, UNIX_TIMESTAMP(), 0, "");',
+        [charId]
+      );
     } catch (e) {
-      // Ignora se tabela znote_accounts não existir ainda
+      // Ignora se znote falhar
     }
 
     const vocMap: Record<number, string> = {
@@ -487,15 +509,18 @@ app.post('/api/accounts/register', async (req: Request, res: Response) => {
       groupName: 'Player'
     };
 
+    const session = {
+      accountName: cleanAcc,
+      type: 1,
+      premiumDays: 30,
+      characters: [newCharacter]
+    };
+
     res.json({
       success: true,
       message: `Conta '${cleanAcc}' e personagem '${cleanChar}' criados com sucesso no banco de dados MariaDB!`,
-      account: {
-        accountName: cleanAcc,
-        type: 1,
-        premiumDays: 30,
-        characters: [newCharacter]
-      }
+      account: session,
+      session,
     });
   } catch (err: any) {
     console.error('Erro ao registrar conta no MariaDB:', err);
@@ -550,17 +575,26 @@ app.post('/api/characters/create', async (req: Request, res: Response) => {
     const [charInsert]: any = await db.query(
       `INSERT INTO \`players\` (
         \`name\`, \`group_id\`, \`account_id\`, \`level\`, \`vocation\`, \`health\`, \`healthmax\`, \`experience\`,
-        \`lookbody\`, \`lookfeet\`, \`lookhead\`, \`looklegs\`, \`looktype\`, \`lookaddons\`, \`maglevel\`,
+        \`lookbody\`, \`lookfeet\`, \`lookhead\`, \`looklegs\`, \`looktype\`, \`maglevel\`,
         \`mana\`, \`manamax\`, \`manaspent\`, \`soul\`, \`town_id\`, \`posx\`, \`posy\`, \`posz\`, \`conditions\`,
         \`cap\`, \`sex\`, \`lastlogin\`, \`lastip\`, \`save\`, \`skull\`, \`skulltime\`, \`balance\`
       ) VALUES (
         ?, 1, ?, 8, ?, 185, 185, 4200,
-        68, 76, 78, 58, ?, 0, 0,
+        68, 76, 78, 58, ?, 0,
         35, 35, 0, 100, 1, 160, 54, 7, '',
         470, ?, 0, 0, 1, 0, 0, 0
       );`,
       [cleanChar, accountId, vocId, looktype, sexId]
     );
+
+    const charId = charInsert.insertId;
+
+    try {
+      await db.query(
+        'INSERT IGNORE INTO `znote_players` (`player_id`, `created`, `hide_char`, `comment`) VALUES (?, UNIX_TIMESTAMP(), 0, "");',
+        [charId]
+      );
+    } catch (e) {}
 
     const vocMap: Record<number, string> = { 1: 'Sorcerer', 2: 'Druid', 3: 'Paladin', 4: 'Knight' };
 
@@ -636,8 +670,9 @@ app.get('/api/accounts/characters', async (req: Request, res: Response) => {
     }
 
     const [rows]: any = await db.query(
-      `SELECT p.\`id\`, p.\`name\`, p.\`level\`, p.\`vocation\`, p.\`maglevel\`, p.\`experience\`, p.\`online\`, p.\`town_id\`, p.\`balance\`, p.\`lastlogin\`
+      `SELECT p.\`id\`, p.\`name\`, p.\`level\`, p.\`vocation\`, p.\`maglevel\`, p.\`experience\`, IF(po.\`player_id\` IS NOT NULL, 1, 0) as \`online\`, p.\`town_id\`, p.\`balance\`, p.\`lastlogin\`
        FROM \`players\` p
+       LEFT JOIN \`players_online\` po ON po.\`player_id\` = p.\`id\`
        INNER JOIN \`accounts\` a ON a.\`id\` = p.\`account_id\`
        WHERE a.\`name\` = ?;`,
       [accountName]
@@ -670,8 +705,9 @@ app.get('/api/admin/players', async (req: Request, res: Response) => {
     }
 
     const [rows]: any = await db.query(
-      `SELECT p.\`id\`, p.\`name\`, p.\`level\`, p.\`vocation\`, p.\`maglevel\`, p.\`experience\`, p.\`online\`, p.\`balance\`, a.\`name\` as \`accountName\`
+      `SELECT p.\`id\`, p.\`name\`, p.\`level\`, p.\`vocation\`, p.\`maglevel\`, p.\`experience\`, IF(po.\`player_id\` IS NOT NULL, 1, 0) as \`online\`, p.\`balance\`, a.\`name\` as \`accountName\`
        FROM \`players\` p
+       LEFT JOIN \`players_online\` po ON po.\`player_id\` = p.\`id\`
        LEFT JOIN \`accounts\` a ON a.\`id\` = p.\`account_id\`
        ORDER BY p.\`level\` DESC LIMIT 100;`
     );
@@ -892,7 +928,10 @@ app.get('/api/character/:name', async (req: Request, res: Response) => {
     }
 
     const [charRows]: any = await db.query(
-      'SELECT id, name, level, vocation, maglevel, experience, online, town_id, balance, lastlogin, group_id FROM players WHERE name = ? LIMIT 1;',
+      `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, IF(po.player_id IS NOT NULL, 1, 0) as online, p.town_id, p.balance, p.lastlogin, p.group_id 
+       FROM players p 
+       LEFT JOIN players_online po ON po.player_id = p.id
+       WHERE p.name = ? LIMIT 1;`,
       [charName]
     );
 
@@ -1454,10 +1493,10 @@ app.get('/api/onlinelist', async (req: Request, res: Response) => {
     if (db) {
       const [rows]: any = await db.query(
         `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, g.name AS guildName 
-         FROM players p
+         FROM players_online po
+         INNER JOIN players p ON p.id = po.player_id
          LEFT JOIN guild_membership gm ON gm.player_id = p.id
          LEFT JOIN guilds g ON gm.guild_id = g.id
-         WHERE p.online > 0 
          ORDER BY p.level DESC;`
       ).catch(() => [[]]);
 

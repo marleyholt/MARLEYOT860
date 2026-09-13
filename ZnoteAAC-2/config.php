@@ -18,25 +18,25 @@
 	// As far as I know, OTX is based on TFS_03, so make sure TFS version is configured TFS_03
 	$config['CustomVersion'] = false;
 
-	$config['site_title'] = 'Znote AAC';
-	$config['site_title_context'] = 'Because open communities are good communities. :3';
-	$config['site_url'] = "http://demo.znote.eu";
+	$config['site_title'] = 'MarleyOT 8.60';
+	$config['site_title_context'] = 'Servidor MarleyOT 8.60 Nostalgia & Diversão';
+	$config['site_url'] = "http://marleyot.duckdns.org";
 
 	// Path to server folder without "\" (or "/") at the end, ex: C:\Users\Username\Documents\GitHub\forgottenserver
-	$config['server_path'] = '';
+	$config['server_path'] = '/home/ubuntu/otserv';
 
 	// ------------------------ \\
 	// MYSQL CONNECTION DETAILS \\
 	// ------------------------ \\
 
 	// phpmyadmin username for OT server: (DONT USE "root" if you are hosting to public).
-	$config['sqlUser'] = 'tfs13';
+	$config['sqlUser'] = 'root';
 
 	// phpmyadmin password for OT server:
-	$config['sqlPassword'] = 'tfs13';
+	$config['sqlPassword'] = 'MARLEY22@@##';
 
 	// The database name to connect to. (This is usually same as username).
-	$config['sqlDatabase'] = 'tfs13';
+	$config['sqlDatabase'] = 'yurots_db';
 
 	// Hostname is usually localhost or 127.0.0.1.
 	$config['sqlHost'] = '127.0.0.1';
@@ -672,8 +672,10 @@
 
 	// WARNING! Account names written here will have admin access to web page!
 	$config['page_admin_access'] = array(
-		'firstaccountName',
-		'secondaccountName',
+		'1234567',
+		'741236',
+		'191196',
+		'marley',
 	);
 	// Allow admins to see executed SQL queries overlay
 	// Useful for testing and optimizing query usage on website

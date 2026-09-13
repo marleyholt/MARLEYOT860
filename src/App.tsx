@@ -37,14 +37,14 @@ export default function App() {
   });
 
   // Dados do Servidor MarleyOT
-  const [serverStats] = useState<ServerStats>({
+  const [serverStats, setServerStats] = useState<ServerStats>({
     status: 'online',
     ip: 'marleyot.duckdns.org',
     port: 7171,
     client: '8.60',
-    onlinePlayers: 1,
+    onlinePlayers: 0,
     maxPlayers: 500,
-    uptime: '14 horas, 32 min',
+    uptime: '15 horas, 20 min',
     worldType: 'Open-PvP',
     expRate: '150x (Stages)',
     skillRate: '40x',
@@ -118,6 +118,34 @@ export default function App() {
           }
         })
         .catch(err => console.log('Could not fetch server settings:', err));
+      // Carregar status do servidor a partir do MariaDB
+      const fetchStatus = () => {
+        fetch('/api/status')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.status) {
+              setServerStats(prev => ({
+                ...prev,
+                ...data
+              }));
+            }
+          })
+          .catch(() => {});
+      };
+      fetchStatus();
+      const statusInterval = setInterval(fetchStatus, 20000);
+
+      // Carregar personagens e highscores do MariaDB
+      fetch('/api/highscores')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCharacters(data);
+          }
+        })
+        .catch(() => {});
+
+      return () => clearInterval(statusInterval);
     } catch (e) {
       console.error(e);
     }
@@ -173,14 +201,15 @@ export default function App() {
         body: JSON.stringify({ accountName, password: pass })
       });
       const data = await res.json();
-      if (res.ok && data.success && data.session) {
-        setActiveSession(data.session);
-        localStorage.setItem('marleyot_active_session', JSON.stringify(data.session));
-        if (data.session.characters && data.session.characters.length > 0) {
+      const session = data.session || data.account;
+      if (res.ok && data.success && session) {
+        setActiveSession(session);
+        localStorage.setItem('marleyot_active_session', JSON.stringify(session));
+        if (session.characters && session.characters.length > 0) {
           setCharacters(prev => {
-            const accNames = new Set(data.session.characters.map((c: any) => c.name.toLowerCase()));
+            const accNames = new Set(session.characters.map((c: any) => c.name.toLowerCase()));
             const others = prev.filter(c => !accNames.has(c.name.toLowerCase()));
-            return [...others, ...data.session.characters];
+            return [...others, ...session.characters];
           });
         }
         return true;
