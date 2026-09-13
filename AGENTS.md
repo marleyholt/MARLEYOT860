@@ -4,7 +4,10 @@
 
 1. **Sincronização no Repositório**:
    - Todas as modificações de arquivos C++, Lua, XML ou SQL do servidor devem ser alteradas diretamente no repositório do workspace para permitir sincronização contínua via `git pull origin main`.
-	 -TODAS AS VEZES que fizermos alggo aqui e validarmos, faça o push automaticamente para o repositorio que você tem o token.
+	 - TODAS AS VEZES que fizermos alggo aqui e validarmos, faça o push automaticamente para o repositorio que você tem o token.
+	 ## ACESSAR O SISTEMA:
+		- ssh -i "C:\Users\fgama\Downloads/MARLEYOT-key-2026-09-06.key" ubuntu@137.131.196.66
+		- marleyot.duckdns.org
 
 2. **Formato Padrão de Comandos Terminal (Estrutura EOF)**:
    - Para toda e qualquer alteração de código ou configuração na VPS, SEMPRE fornecer os comandos prontos utilizando blocos `cat << 'EOF' > ... EOF` (ou scripts bash idempotentes).
@@ -19,7 +22,7 @@
      - Reinício do serviço com validação de status (`systemctl restart otserv.service`, logs).
      - Comandos in-game do GM ou queries SQL para resetar ou testar a alteração no personagem sem inconsistências de cache.
 
-3. **Ordem de entrega de informações**:
+3. **Ordem de entrega de informações**: 
    - Contextualizar e Definir o Problema
    - Apontar Solução
    - Seguir para as sequencias de ordenamento dos itens 1 e 2

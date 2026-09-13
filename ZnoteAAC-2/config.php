@@ -14,7 +14,7 @@
 	// TFS 0.3 = TFS_03 (If you are using 0.3.6, set $config['salt'] to false)!
 	// TFS 0.4 = TFS_03
 	// TFS 1.x = TFS_10 (Current under development version)
-	$config['ServerEngine'] = 'TFS_10';
+	$config['ServerEngine'] = 'TFS_03';
 	// As far as I know, OTX is based on TFS_03, so make sure TFS version is configured TFS_03
 	$config['CustomVersion'] = false;
 
@@ -640,7 +640,7 @@
 	$config['client'] = 1098; // 954 = client 9.54
 
 	// Download link to client.
-	$config['client_download'] = 'http://tibiaclient.otslist.eu/download/tibia'. $config['client'] .'.exe';
+	$config['client_download'] = 'https://www.mediafire.com/file/wsb7v37de4thx93/MARLEYOT860.zip/file';
 	$config['client_download_linux'] = 'http://tibiaclient.otslist.eu/download/tibia'. $config['client'] .'.tgz';
 
 	$config['port'] = 7171; // Port number to connect to your OT.
@@ -668,7 +668,7 @@
 		// 60 * 15; // 15 minutes.
 		'lifespan' => 5,
 		// Store cache in memory/RAM? Requires PHP extension APCu
-		'memory' => true
+		'memory' => false
 	);
 
 	// WARNING! Account names written here will have admin access to web page!

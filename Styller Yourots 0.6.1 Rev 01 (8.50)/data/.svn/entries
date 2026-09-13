@@ -1,73 +1,0 @@
-9
-
-dir
-2499
-http://svn.otland.net/private/forgottenserver/trunk/data
-http://svn.otland.net/private/forgottenserver
-
-
-
-2009-07-30T17:25:34.128965Z
-2497
-elf
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-c161f52b-5830-4e7a-bee0-5dea2c17262e
-
-npc
-dir
-
-items
-dir
-
-creaturescripts
-dir
-
-globalevents
-dir
-
-world
-dir
-
-monster
-dir
-
-actions
-dir
-
-XML
-dir
-
-spells
-dir
-
-raids
-dir
-
-logs
-dir
-
-lib
-dir
-
-weapons
-dir
-
-talkactions
-dir
-
-movements
-dir
-
