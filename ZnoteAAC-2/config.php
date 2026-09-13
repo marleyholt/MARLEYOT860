@@ -30,16 +30,17 @@
 	// ------------------------ \\
 
 	// phpmyadmin username for OT server: (DONT USE "root" if you are hosting to public).
-	$config['sqlUser'] = 'root';
+	$config['sqlUser'] = 'otserv86';
 
 	// phpmyadmin password for OT server:
-	$config['sqlPassword'] = 'MARLEY22@@##';
+	$config['sqlPassword'] = 'MarleyOT_860_SecPass!';
 
 	// The database name to connect to. (This is usually same as username).
-	$config['sqlDatabase'] = 'yurots_db';
+	$config['sqlDatabase'] = 'marleyot86';
 
 	// Hostname is usually localhost or 127.0.0.1.
 	$config['sqlHost'] = '127.0.0.1';
+	$config['sqlPort'] = 3306;
 
 	// QR code authenticator Only works with TFS 1.2+
 	$config['twoFactorAuthenticator'] = false;

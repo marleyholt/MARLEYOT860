@@ -38,9 +38,9 @@ function getSettings(): PortalSettingsData {
     heroBannerUrl: '',
     dbHost: '127.0.0.1',
     dbPort: 3306,
-    dbUser: 'root',
-    dbPassword: 'MARLEY22@@##',
-    dbDatabase: 'yurots_db',
+    dbUser: 'otserv86',
+    dbPassword: 'MarleyOT_860_SecPass!',
+    dbDatabase: 'marleyot86',
   };
 
   try {
@@ -79,20 +79,20 @@ function getEffectiveDbConfig(): DbConfig {
   return {
     host: process.env.MYSQL_HOST || settings.dbHost || '127.0.0.1',
     port: Number(process.env.MYSQL_PORT) || settings.dbPort || 3306,
-    user: process.env.MYSQL_USER || settings.dbUser || 'root',
+    user: process.env.MYSQL_USER || settings.dbUser || 'otserv86',
     password: process.env.MYSQL_PASSWORD !== undefined 
       ? process.env.MYSQL_PASSWORD 
-      : (settings.dbPassword !== undefined && settings.dbPassword !== '' ? settings.dbPassword : 'MARLEY22@@##'),
-    database: process.env.MYSQL_DATABASE || settings.dbDatabase || 'yurots_db',
+      : (settings.dbPassword !== undefined && settings.dbPassword !== '' ? settings.dbPassword : 'MarleyOT_860_SecPass!'),
+    database: process.env.MYSQL_DATABASE || settings.dbDatabase || 'marleyot86',
   };
 }
 
 let pool: Pool | null = null;
 let dbConnected = false;
 let dbLastHost = '';
-let dbLastDatabase = 'yurots_db';
+let dbLastDatabase = 'marleyot86';
 let dbLastError = '';
-let dbCurrentUser = 'root';
+let dbCurrentUser = 'otserv86';
 
 async function getPool(): Promise<Pool | null> {
   if (pool && dbConnected) return pool;
@@ -112,15 +112,15 @@ async function getPool(): Promise<Pool | null> {
   // Databases to attempt
   const candidateDatabases: string[] = [];
   if (currentCfg.database) candidateDatabases.push(currentCfg.database);
-  if (!candidateDatabases.includes('yurots_db')) candidateDatabases.push('yurots_db');
   if (!candidateDatabases.includes('marleyot86')) candidateDatabases.push('marleyot86');
+  if (!candidateDatabases.includes('yurots_db')) candidateDatabases.push('yurots_db');
 
   // Candidate credentials:
   const candidateCredentials: Array<{ user: string; password: string }> = [
     { user: currentCfg.user, password: currentCfg.password },
+    { user: 'otserv86', password: 'MarleyOT_860_SecPass!' },
     { user: 'root', password: 'MARLEY22@@##' },
     { user: 'marleyot', password: 'MARLEY22@@##' },
-    { user: 'marleyot', password: '' },
     { user: 'root', password: '' }
   ];
 
