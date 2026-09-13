@@ -196,7 +196,7 @@ app.get('/api/status', async (req: Request, res: Response) => {
     let totalAccounts = 0;
 
     if (db) {
-      const [onlineRows]: any = await db.query('SELECT COUNT(*) as count FROM `players` WHERE `online` > 0;').catch(() => [[{ count: 0 }]]);
+      const [onlineRows]: any = await db.query('SELECT COUNT(*) as count FROM `players_online`;').catch(() => [[{ count: 0 }]]);
       if (onlineRows && onlineRows[0]) {
         onlineCount = Number(onlineRows[0].count);
       }
@@ -912,7 +912,9 @@ app.get('/api/character/:name', async (req: Request, res: Response) => {
     }
 
     const [charRows]: any = await db.query(
-      `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, p.online
+      `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, IF(po.player_id IS NOT NULL, 1, 0) as online, p.town_id, p.balance, p.lastlogin, p.group_id 
+       FROM players p 
+       LEFT JOIN players_online po ON po.player_id = p.id
        WHERE p.name = ? LIMIT 1;`,
       [charName]
     );
@@ -1475,7 +1477,8 @@ app.get('/api/onlinelist', async (req: Request, res: Response) => {
     if (db) {
       const [rows]: any = await db.query(
         `SELECT p.id, p.name, p.level, p.vocation, p.maglevel, p.experience, g.name AS guildName 
-         FROM players p WHERE p.online > 0
+         FROM players_online po
+         INNER JOIN players p ON p.id = po.player_id
          LEFT JOIN guild_membership gm ON gm.player_id = p.id
          LEFT JOIN guilds g ON gm.guild_id = g.id
          ORDER BY p.level DESC;`

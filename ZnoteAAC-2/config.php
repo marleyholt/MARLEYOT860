@@ -14,7 +14,7 @@
 	// TFS 0.3 = TFS_03 (If you are using 0.3.6, set $config['salt'] to false)!
 	// TFS 0.4 = TFS_03
 	// TFS 1.x = TFS_10 (Current under development version)
-	$config['ServerEngine'] = 'TFS_03';
+	$config['ServerEngine'] = 'TFS_10';
 	// As far as I know, OTX is based on TFS_03, so make sure TFS version is configured TFS_03
 	$config['CustomVersion'] = false;
 
